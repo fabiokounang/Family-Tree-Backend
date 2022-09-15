@@ -66,10 +66,11 @@ exports.signinAdmin = async (req, res, next) => {
       username: admin.username,
       role: admin.role,
       status: admin.status,
-      created_at: admin.created_at
+      created_at: admin.created_at,
+      token: token
     }
 
-    sendCookie('admin', req, res, token);
+    // sendCookie('admin', req, res, token);
 
     data = objAdmin;
     status = 200;
@@ -306,7 +307,7 @@ exports.getLogin = (req, res, next) => {
 
 exports.signoutAdmin = async (req, res, next) => {
   try {
-    sendCookie('admin', req, res, '', true);
+    // sendCookie('admin', req, res, '', true);
     sendResponse(res, 200);
   } catch (error) {
     sendResponse(res, 200);
