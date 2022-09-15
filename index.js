@@ -17,6 +17,7 @@ const calendar = require('./routes/calendar');
 const provincecity = require('./routes/province-city');
 const broadcast = require('./routes/broadcast');
 
+app.enable('trust proxy');
 app.use(cors({ credentials: true, origin: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
