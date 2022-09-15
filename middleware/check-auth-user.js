@@ -12,8 +12,8 @@ const { auth, user_not_found, user_not_active } = require("../utils/error-messag
 module.exports = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   try {
-    if (req.cookies.authorization) {
-      const token = req.cookies.authorization.split('Bearer ')[1]; // token
+    if (req.headers.authorization) {
+      const token = req.headers.authorization.split('Bearer ')[1]; // token
       if (!token) return helperResponse(error);
       const decoded = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
       const user = await User.findById(decoded._id);

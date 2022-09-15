@@ -13,7 +13,7 @@ module.exports = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   try {
     if (req.headers.authorization) {
-      const token = req.cookies.authorization.split('Bearer ')[1]; // token
+      const token = req.headers.authorization.split('Bearer ')[1]; // token
       if (!token) return helperResponse(error);
       const decoded = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
       const admin = await Admin.findById(decoded._id);
