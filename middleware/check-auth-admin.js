@@ -12,8 +12,8 @@ const { auth, admin_not_found, admin_not_active } = require("../utils/error-mess
 module.exports = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   try {
-    if (req.cookies.tokenadmin) {
-      const token = req.cookies.tokenadmin; // token
+    if (req.headers.authorization) {
+      const token = req.cookies.authorization.split('Bearer ')[1]; // token
       if (!token) return helperResponse(error);
       const decoded = await promisify(jwt.verify)(token, process.env.SECRET_KEY);
       const admin = await Admin.findById(decoded._id);
