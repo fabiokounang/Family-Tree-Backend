@@ -6,7 +6,7 @@ module.exports = [
     .notEmpty().withMessage(title_required)
     .isLength({ max: 200 }).withMessage(title_max_200)
     .trim(),
-  body('description')
+  body('body')
     .notEmpty().withMessage(description_required)
     .isLength({ max: 200 }).withMessage(description_max_200)
     .trim(),

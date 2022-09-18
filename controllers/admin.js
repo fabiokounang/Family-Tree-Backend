@@ -9,9 +9,10 @@ const processErrorForm = require("../helper-function/process-error-form");
 const processQueryParameter = require('../helper-function/process-query-parameter');
 const returnData = require('../helper-function/return-data');
 const sendResponse = require('../helper-function/send-response');
-const sendCookie = require('../helper-function/send-cookie');
+const { createLog } = require('./log');
 
 const { username_unique, bad_request, admin_not_found, password_wrong } = require("../utils/error-message");
+
 
 exports.createAdmin = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
@@ -40,6 +41,9 @@ exports.createAdmin = async (req, res, next) => {
       role: result.role
     }
     status = 201;
+
+    createLog(req.user._id, 'create admin');
+
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -74,6 +78,8 @@ exports.signinAdmin = async (req, res, next) => {
 
     data = objAdmin;
     status = 200;
+
+    createLog(admin._id, 'signin admin');
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -159,6 +165,8 @@ exports.updateAdmin = async (req, res, next) => {
     await admin.save({validateBeforeSave: true});
     data = admin.toObject();
     status = 200;
+
+    createLog(req.user._id, 'update data admin');
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -184,19 +192,13 @@ exports.updatePassword = async (req, res, next) => {
     let admin = await Admin.findById(id).select(['password, role']);
     if (!admin) throw(admin_not_found);
 
-    // let beforeAdmin = JSON.stringify(admin);
-
     // // proses update data admin
     admin.password = req.body.password || admin.password;
     await admin.save({validateBeforeSave: true});
 
-    // 4) cek jika update password diri sendiri, response data ada key untuk login ulang
-
-    // beforeAdmin = JSON.parse(beforeAdmin);
-    // let objLog = generateDataLog(req.userData.username, 'log.update_password_admin', req.userData.role, null, null);
-    // await log.createLog(objLog);
-
     status = 200;
+
+    createLog(req.user._id, 'update password admin');
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -221,19 +223,14 @@ exports.changePassword = async (req, res, next) => {
     let admin = await Admin.findById(id).select(['password, role']);
     if (!admin) throw(admin_not_found);
 
-    // let beforeAdmin = JSON.stringify(admin);
-
-    // // proses update data admin
+    // proses update data admin
     admin.password = req.body.password || admin.password;
     await admin.save({validateBeforeSave: true});
 
-    // 4) cek jika update password diri sendiri, response data ada key untuk login ulang
-
-    // beforeAdmin = JSON.parse(beforeAdmin);
-    // let objLog = generateDataLog(req.userData.username, 'log.update_password_admin', req.userData.role, null, null);
-    // await log.createLog(objLog);
-
     status = 200;
+
+    createLog(req.user._id, 'change password admin (self)');
+
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -257,17 +254,13 @@ exports.updateStatus = async (req, res, next) => {
     let admin = await Admin.findById(id).select(['status role']);
     if (!admin) throw(admin_not_found);
 
-    // let beforeAdmin = JSON.stringify(admin);
 
     // deactivate status
     admin.status = req.body.status || admin.status;
     await admin.save({validateBeforeSave: true});
-
-    // beforeAdmin = JSON.parse(beforeAdmin);
-    // let objLog = generateDataLog(req.userData.username, 'log.deactivate_admin', req.userData.role, {status: beforeAdmin.status}, {status: admin.status});
-    // await log.createLog(objLog);
     
     status = 200;
+    createLog(req.user._id, 'update status admin');
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -282,11 +275,15 @@ exports.deleteAdmin = async (req, res, next) => {
     // 1) set id admin
     const id = req.params.id;
     if (!id) throw new Error(bad_request);
+    if (id == req.user._id) throw new Error(bad_request);
 
     // 2) query delete admin by id
     await Admin.deleteOne({ _id: id });
 
     status = 204;
+
+    createLog(req.user._id, 'delete admin');
+
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);

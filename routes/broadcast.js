@@ -7,6 +7,6 @@ const checkAuthAdmin = require('../middleware/check-auth-admin');
 const createBroadcastValidation = require('../middleware/express-validation/broadcast/create-broadcast-validation');
 
 router.post('/subscribe', broadcastController.saveSubscription);
-router.post('/push', broadcastController.pushNotification);
+router.post('/push', checkAuthAdmin, createBroadcastValidation, broadcastController.pushNotification);
 
 module.exports = router;

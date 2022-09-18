@@ -1,19 +1,15 @@
-const jwt = require('jsonwebtoken');
-const bcryptjs = require('bcryptjs');
 const { validationResult } = require('express-validator');
 
-const Admin = require("../model/admin")
-
-const handleError = require("../helper-function/handle-error");
-const processErrorForm = require("../helper-function/process-error-form");
-const processQueryParameter = require('../helper-function/process-query-parameter');
-const returnData = require('../helper-function/return-data');
-const sendResponse = require('../helper-function/send-response');
-const sendCookie = require('../helper-function/send-cookie');
-const { bad_request, province_unique } = require('../utils/error-message');
 const Province = require('../model/province');
 const City = require('../model/city');
 
+const handleError = require("../helper-function/handle-error");
+const processQueryParameter = require('../helper-function/process-query-parameter');
+const returnData = require('../helper-function/return-data');
+const sendResponse = require('../helper-function/send-response');
+const { createLog } = require('./log');
+
+const { bad_request, province_unique } = require('../utils/error-message');
 
 exports.createProvince = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
@@ -46,6 +42,9 @@ exports.createProvince = async (req, res, next) => {
       code: inc
     }
     status = 201;
+
+    createLog(req.user_id, 'create province');
+
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -84,6 +83,9 @@ exports.createCity = async (req, res, next) => {
       code: inc
     }
     status = 201;
+
+    createLog(req.user_id, 'create city');
+
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -157,6 +159,8 @@ exports.deleteProvince = async (req, res, next) => {
     await City.deleteMany({ provinceId: id });
 
     status = 204;
+    createLog(req.user_id, 'delete province');
+
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -176,6 +180,7 @@ exports.deleteCity = async (req, res, next) => {
     await City.deleteOne({ _id: id });
 
     status = 204;
+    createLog(req.user_id, 'delete city');
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);

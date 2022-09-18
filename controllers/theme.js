@@ -6,9 +6,10 @@ const processErrorForm = require('../helper-function/process-error-form');
 const returnData = require('../helper-function/return-data');
 const handleError = require('../helper-function/handle-error');
 const sendResponse = require('../helper-function/send-response');
+const processQueryParameter = require('../helper-function/process-query-parameter');
+const { createLog } = require('./log');
 
 const { theme_unique, theme_not_found } = require('../utils/error-message');
-const processQueryParameter = require('../helper-function/process-query-parameter');
 
 exports.createTheme = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
@@ -39,6 +40,7 @@ exports.createTheme = async (req, res, next) => {
       color: result.color
     }
     status = 201;
+    createLog(req.user._id, 'create theme');
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -67,26 +69,80 @@ exports.updateTheme = async (req, res, next) => {
 
     //4) query update data marga
     theme.theme = req.body.theme || theme.theme;
+    await theme.save({validateBeforeSave: true});
+
+    data = theme.toObject();
+    status = 200;
+
+    createLog(req.user._id, 'update theme name');
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
+exports.updateColor = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+  try {
+    // 1) set id admin
+    const id = req.params.id;
+    if (!id) throw new Error(bad_request);
+
+    // 2) validasi request body
+    let errors = validationResult(req);    
+    if (!errors.isEmpty()) {
+      error.msg = processErrorForm(errors.array());
+      throw(error);
+    }
+
+    // 3) query find admin by id
+    let theme = await Theme.findById(id).select(['theme', 'color']);
+    if (!theme) throw(theme_not_found);
+
+    //4) query update data marga
     theme.color = req.body.color || theme.color;
     await theme.save({validateBeforeSave: true});
 
-    // beforeAdmin = JSON.parse(beforeAdmin);
-    // let beforeData = {
-    //   username: beforeAdmin.username,
-    //   toko: beforeAdmin.toko,
-    //   role: beforeAdmin.role
-    // }
-
-    // let afterData = {
-    //   username: admin.username,
-    //   toko: req.toko,
-    //   role: admin.role
-    // }
-
-    // let objLog = generateDataLog(req.userData.username, 'log.update_admin', req.userData.role, beforeData, afterData);
-    // await log.createLog(objLog);
     data = theme.toObject();
     status = 200;
+
+    createLog(req.user._id, 'update theme color');
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
+exports.updateStatus = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+  try {
+    // 1) set id admin
+    const id = req.params.id;
+    if (!id) throw new Error(bad_request);
+
+    // 2) validasi request body
+    let errors = validationResult(req);    
+    if (!errors.isEmpty()) {
+      error.msg = processErrorForm(errors.array());
+      throw(error);
+    }
+
+    // 3) query find admin by id
+    let theme = await Theme.findById(id).select(['status']);
+    if (!theme) throw(theme_not_found);
+
+    //4) query update data marga
+    theme.status = req.body.status || theme.status;
+    await theme.save({validateBeforeSave: true});
+
+    data = theme.toObject();
+    status = 200;
+
+    createLog(req.user._id, 'update theme color');
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -158,6 +214,8 @@ exports.deleteTheme = async (req, res, next) => {
     await Theme.deleteOne({_id: id});
 
     status = 204;
+    createLog(req.user._id, 'delete theme');
+
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);

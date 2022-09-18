@@ -5,6 +5,7 @@ const sendResponse = require("../helper-function/send-response");
 const Calendar = require("../model/calendar");
 
 const { calendar_not_found, bad_request, event_name_required } = require("../utils/error-message");
+const { createLog } = require("./log");
 
 exports.createCalendar = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
@@ -33,6 +34,8 @@ exports.createCalendar = async (req, res, next) => {
 
     // 4) bentuk response data dan set status code = 201
     status = 201;
+
+    createLog(req.user_id, 'create new calendar');
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -64,6 +67,9 @@ exports.updateCalendar = async (req, res, next) => {
     });
 
     status = 204;
+
+    createLog(req.user_id, 'update calendar');
+
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -78,6 +84,7 @@ exports.deleteCalendar = async (req, res, next) => {
     const id = req.params.id;
     await Calendar.deleteOne({_id: id});
     status = 204;
+    createLog(req.user_id, 'delete calendar');
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -135,6 +142,8 @@ exports.updateStatusCalendar = async (req, res, next) => {
     await calendar.save();
 
     status = 204;
+    createLog(req.user_id, 'update status calendar');
+
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);

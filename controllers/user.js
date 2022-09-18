@@ -67,7 +67,6 @@ exports.signupUser = async (req, res, next) => {
       fullname: result.fullname,
       date_of_birth: result.date_of_birth,
       gender: result.gender,
-      
     }
     status = 201;
   } catch (err) {
