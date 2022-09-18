@@ -1,4 +1,4 @@
-const { bad_request, unknown_error } = require("../utils/error-message");
+const { bad_request, unknown_error, auth } = require("../utils/error-message");
 
 module.exports = (error) => {
   let fixError = '';

@@ -7,7 +7,7 @@ const returnData = require("../helper-function/return-data");
 const sendResponse = require("../helper-function/send-response");
 const handleError = require("../helper-function/handle-error");
 
-const { auth, admin_not_found, admin_not_active } = require("../utils/error-message");
+const { auth, admin_not_active } = require("../utils/error-message");
 
 module.exports = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
