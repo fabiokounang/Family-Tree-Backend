@@ -10,16 +10,14 @@ const processQueryParameter = require('../helper-function/process-query-paramete
 const { createLog } = require('./log');
 
 const { theme_unique, theme_not_found } = require('../utils/error-message');
+const User = require('../model/user');
 
 exports.createTheme = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   try {
     // 1) validasi request body
     const errors = validationResult(req);    
-    if (!errors.isEmpty()) {
-      error.msg = processErrorForm(errors.array());
-      throw(error);
-    }
+    if (!errors.isEmpty()) throw new Error(bad_request);
 
     // 2) query find theme theme exist / tidak
     const theme = await Theme.findOne({ theme: req.body.theme, color: req.body.color });
@@ -28,7 +26,8 @@ exports.createTheme = async (req, res, next) => {
     // 3) create new marga theme
     const newTheme = new Theme({
       theme: req.body.theme,
-      color: req.body.color
+      color: req.body.color,
+      text: req.body.text
     });
 
     const result = await newTheme.save();
@@ -58,10 +57,7 @@ exports.updateTheme = async (req, res, next) => {
 
     // 2) validasi request body
     let errors = validationResult(req);    
-    if (!errors.isEmpty()) {
-      error.msg = processErrorForm(errors.array());
-      throw(error);
-    }
+    if (!errors.isEmpty()) throw new Error(bad_request);
 
     // 3) query find admin by id
     let theme = await Theme.findById(id).select(['theme', 'color']);
@@ -92,10 +88,7 @@ exports.updateColor = async (req, res, next) => {
 
     // 2) validasi request body
     let errors = validationResult(req);    
-    if (!errors.isEmpty()) {
-      error.msg = processErrorForm(errors.array());
-      throw(error);
-    }
+    if (!errors.isEmpty()) throw new Error(bad_request);
 
     // 3) query find admin by id
     let theme = await Theme.findById(id).select(['theme', 'color']);
@@ -103,6 +96,39 @@ exports.updateColor = async (req, res, next) => {
 
     //4) query update data marga
     theme.color = req.body.color || theme.color;
+    await theme.save({validateBeforeSave: true});
+
+    data = theme.toObject();
+    status = 200;
+
+    createLog(req.user._id, 'update theme color');
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
+exports.updateText = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+  try {
+    // 1) set id admin
+    const id = req.params.id;
+    if (!id) throw new Error(bad_request);
+
+    // 2) validasi request body
+    let errors = validationResult(req);    
+    if (!errors.isEmpty()) throw new Error(bad_request);
+
+    // 3) query find admin by id
+    let theme = await Theme.findById(id).select(['theme', 'text', 'color']);
+    console.log(theme)
+    if (!theme) throw(theme_not_found);
+
+    //4) query update data marga
+    theme.text = req.body.text || theme.text;
+    console.log(theme, req.body)
     await theme.save({validateBeforeSave: true});
 
     data = theme.toObject();
@@ -126,10 +152,7 @@ exports.updateStatus = async (req, res, next) => {
 
     // 2) validasi request body
     let errors = validationResult(req);    
-    if (!errors.isEmpty()) {
-      error.msg = processErrorForm(errors.array());
-      throw(error);
-    }
+    if (!errors.isEmpty()) throw new Error(bad_request);
 
     // 3) query find admin by id
     let theme = await Theme.findById(id).select(['status']);
@@ -159,7 +182,7 @@ exports.getAllTheme = async (req, res, next) => {
     const queryParams = processQueryParameter(req, 'created_at', ['theme', 'color']);
 
     // 2) query data dan query count total
-    const results = await Theme.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['theme', 'color', 'status', 'created_at']);
+    const results = await Theme.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['theme', 'text', 'color', 'status', 'created_at']);
     const totalDocument = await Theme.find(queryParams.objFilterSearch).countDocuments();
 
     // 3) bentuk response data dan set status code = 200
@@ -215,6 +238,29 @@ exports.deleteTheme = async (req, res, next) => {
 
     status = 204;
     createLog(req.user._id, 'delete theme');
+
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+} 
+
+exports.setUserTheme = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+  try {
+    // 1) set id user
+    const id = req.user._id;
+
+    // 2) query delete admin by id
+    await User.updateOne({_id: id}, {
+      $set: {
+        theme: req.body.theme
+      }
+    });
+
+    status = 204;
 
   } catch (err) {
     stack = err.message || err.stack || err;

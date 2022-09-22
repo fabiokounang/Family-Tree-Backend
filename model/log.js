@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const logSchema = new Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'user'
+    ref: 'admin'
   },
   action: {
     type: String,

@@ -17,6 +17,11 @@ const themeSchema = new Schema({
     required: [true, color_required],
     trim: true
   },
+  text: {
+    type: String,
+    required: [true, color_required],
+    trim: true
+  },
   status: {
     type: Number,
     required: [true, status_required],

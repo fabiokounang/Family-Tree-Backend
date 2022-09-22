@@ -102,6 +102,10 @@ const userSchema = new Schema({
   remark: {
     type: String
   },
+  theme: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'theme'
+  },
   created_at: {
     type: String,
     default: Date.now

@@ -10,7 +10,7 @@ const processQueryParameter = require('../helper-function/process-query-paramete
 const sendCookie = require('../helper-function/send-cookie');
 const sendResponse = require("../helper-function/send-response");
 
-const { username_unique, user_not_found, bad_request } = require("../utils/error-message");
+const { username_unique, user_not_found, bad_request, password_wrong } = require("../utils/error-message");
 const Province = require('../model/province');
 const City = require('../model/city');
 
@@ -92,12 +92,18 @@ exports.signinUser = async (req, res, next) => {
 
     const token = jwt.sign({ _id: user._id, username: user.username, status: user.status }, process.env.SECRET_KEY, { algorithm: 'HS512'}, { expiresIn: "7d" });
     let objUser = {
-      id: user.id,
+      _id: user._id,
       username: user.username,
       address: user.address,
       gender: user.gender,
       date_of_birth: user.date_of_birth,
-      status: user.status
+      first_name_latin: user.first_name_latin,
+      last_name_latin: user.last_name_latin,
+      chinese_name: user.chinese_name,
+      status: user.status,
+      no_anggota: user.no_anggota,
+      theme: user.theme || '',
+      token: token
     }
 
     sendCookie('user', req, res, token);

@@ -25,7 +25,10 @@ exports.getAllLog = async (req, res, next) => {
     const queryParams = processQueryParameter(req, 'created_at', ['username']);
 
     // 2) query data dan query count total
-    const results = await Log.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['username', 'status', 'role', 'created_at']);
+    const results = await Log.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['user', 'action', 'created_at']).populate({
+      path: 'user',
+      select: 'username'
+    });
     const totalDocument = await Log.find(queryParams.objFilterSearch).countDocuments();
 
     // 3) bentuk response data dan set status code = 200

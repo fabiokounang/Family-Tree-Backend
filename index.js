@@ -16,6 +16,7 @@ const theme = require('./routes/theme');
 const calendar = require('./routes/calendar');
 const provincecity = require('./routes/province-city');
 const broadcast = require('./routes/broadcast');
+const log = require('./routes/log');
 
 app.enable('trust proxy');
 app.use(cors({ credentials: true, origin: true }));
@@ -24,12 +25,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(compression());
 
+app.use((req, res, next) => {
+  next();
+})
+
 app.use('/api/admin', admin);
-app.use('/api/user', user);
 app.use('/api/theme', theme);
+app.use('/api/user', user);
 app.use('/api/calendar', calendar);
 app.use('/api/province_city', provincecity);
 app.use('/api/broadcast', broadcast);
+app.use('/api/log', log);
 
 app.all('*', (req, res, next) => {
   res.send({
