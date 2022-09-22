@@ -156,13 +156,10 @@ exports.getOneCalendar = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
 
   try {
-    const id = req.params.id;
-    if (!id) throw new Error(bad_request);
-
-    // 1) query data dan query count total
-    const result = await Calendar.findById(id).lean();
+    // 1) query data calendar aktif
+    const result = await Calendar.findOne({ status: 1 }).lean();
     result.calendar = JSON.parse(result.calendar);
-    
+
     // 2) bentuk response data dan set status code = 200
     data = {
       value: result
