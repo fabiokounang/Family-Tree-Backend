@@ -9,7 +9,7 @@ const returnData = require('../helper-function/return-data');
 const sendResponse = require('../helper-function/send-response');
 const { createLog } = require('./log');
 
-const { bad_request, province_unique } = require('../utils/error-message');
+const { bad_request, province_unique, city_unique } = require('../utils/error-message');
 
 exports.createProvince = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
@@ -43,7 +43,7 @@ exports.createProvince = async (req, res, next) => {
     }
     status = 201;
 
-    createLog(req.user_id, 'create province');
+    createLog(req.user._id, 'create province');
 
   } catch (err) {
     stack = err.message || err.stack || err;
@@ -60,19 +60,21 @@ exports.createCity = async (req, res, next) => {
     const errors = validationResult(req);    
     if (!errors.isEmpty()) throw new Error(bad_request);
 
-    // 2) query find admin exist / tidak
-    const province = await City.findOne({ provinceId: req.body.province,city: req.body.city });
+    // 2) query find city exist / tidak
+    console.log(req.body);
+    const province = await City.findOne({ provinceId: req.body.province, city: req.body.city });
     if (province) throw new Error(city_unique);
 
     // 3) create new province
     const lastCity = await City.find().sort({ created_at: -1 }).limit(1);
+    console.log(lastCity)
     let inc = null
     if (lastCity.length <= 0) inc = 0;
     else inc = +lastCity[0].code + 1;
 
     const newCity = new City({
       code: inc,
-      provinceId: req.body.provinceId,
+      provinceId: req.body.province,
       city: req.body.city
     });
     const result = await newCity.save();
@@ -84,7 +86,7 @@ exports.createCity = async (req, res, next) => {
     }
     status = 201;
 
-    createLog(req.user_id, 'create city');
+    createLog(req.user._id, 'create city');
 
   } catch (err) {
     stack = err.message || err.stack || err;
@@ -147,6 +149,31 @@ exports.getAllCityByProvince = async (req, res, next) => {
   }
 }
 
+exports.updateProvince = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+  try {
+    // 1) set id
+    const id = req.params.id;
+    if (!id) throw new Error(bad_request);
+
+    // 2) query delete by id
+    await Province.updateOne({ _id: id }, {
+      $set: {
+        province: req.body.province
+      }
+    });
+
+    status = 204;
+    createLog(req.user._id, 'update province');
+
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
 exports.deleteProvince = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   try {
@@ -159,7 +186,32 @@ exports.deleteProvince = async (req, res, next) => {
     await City.deleteMany({ provinceId: id });
 
     status = 204;
-    createLog(req.user_id, 'delete province');
+    createLog(req.user._id, 'delete province');
+
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
+exports.updateCity = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+  try {
+    // 1) set id
+    const id = req.params.id;
+    if (!id) throw new Error(bad_request);
+
+    // 2) query delete by id
+    await City.updateOne({ _id: id }, {
+      $set: {
+        city: req.body.city
+      }
+    });
+
+    status = 204;
+    createLog(req.user._id, 'update city');
 
   } catch (err) {
     stack = err.message || err.stack || err;
@@ -180,7 +232,7 @@ exports.deleteCity = async (req, res, next) => {
     await City.deleteOne({ _id: id });
 
     status = 204;
-    createLog(req.user_id, 'delete city');
+    createLog(req.user._id, 'delete city');
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);

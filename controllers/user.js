@@ -42,6 +42,7 @@ exports.signupUser = async (req, res, next) => {
       username: req.body.username,
       password: req.body.password,
       gender: req.body.gender,
+      status: req.body.status || 1,
       first_name_latin: req.body.first_name_latin,
       last_name_latin: req.body.last_name_latin,
       chinese_name: req.body.chinese_name,

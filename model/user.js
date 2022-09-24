@@ -11,7 +11,6 @@ const userSchema = new Schema({
     required: [true, username_required],
     maxlength: 30,
     unique: true,
-    lowercase: true,
     trim: true
   },
   password: {
@@ -34,14 +33,12 @@ const userSchema = new Schema({
     type: String,
     required: [true, first_name_latin_required],
     maxlength: 200,
-    lowercase: true,
     trim: true
   },
   last_name_latin: {
     type: String,
     required: [true, last_name_latin_required],
     maxlength: 200,
-    lowercase: true,
     trim: true
   },
   chinese_name: {
@@ -80,6 +77,8 @@ const userSchema = new Schema({
   phone: {
     type: String,
     required: [true, phone_required],
+    minlength: 10,
+    maxlength: 14,
     trim: true
   },
   email: {
