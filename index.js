@@ -16,6 +16,7 @@ const theme = require('./routes/theme');
 const calendar = require('./routes/calendar');
 const provincecity = require('./routes/province-city');
 const broadcast = require('./routes/broadcast');
+const occasion = require('./routes/occasion');
 const log = require('./routes/log');
 
 app.enable('trust proxy');
@@ -36,6 +37,7 @@ app.use('/api/calendar', calendar);
 app.use('/api/province_city', provincecity);
 app.use('/api/broadcast', broadcast);
 app.use('/api/log', log);
+app.use('/api/occasion', occasion);
 
 app.all('*', (req, res, next) => {
   res.send({

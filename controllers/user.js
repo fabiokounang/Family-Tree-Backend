@@ -1,8 +1,11 @@
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { validationResult } = require("express-validator");
 
 const User = require("../model/user");
+const City = require('../model/city');
+const Province = require('../model/province');
 
 const handleError = require("../helper-function/handle-error");
 const returnData = require("../helper-function/return-data");
@@ -10,9 +13,8 @@ const processQueryParameter = require('../helper-function/process-query-paramete
 const sendCookie = require('../helper-function/send-cookie');
 const sendResponse = require("../helper-function/send-response");
 
-const { username_unique, user_not_found, bad_request, password_wrong } = require("../utils/error-message");
-const Province = require('../model/province');
-const City = require('../model/city');
+const { username_unique, user_not_found, bad_request, password_wrong, token_expired } = require("../utils/error-message");
+const sendEmail = require('../helper-function/send-email');
 
 exports.signupUser = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
@@ -40,6 +42,7 @@ exports.signupUser = async (req, res, next) => {
     // 3) create new user
     const newUser = new User({
       username: req.body.username,
+      email: req.body.email,
       password: req.body.password,
       gender: req.body.gender,
       status: req.body.status || 1,
@@ -51,7 +54,6 @@ exports.signupUser = async (req, res, next) => {
       date_of_birth: req.body.date_of_birth,
       place_of_birth: req.body.place_of_birth,
       phone: req.body.phone,
-      email: req.body.email,
       wechat: req.body.wechat,
       city_of_residence: req.body.city_of_residence,
       postal_address: req.body.postal_address,
@@ -126,10 +128,60 @@ exports.forgetPasswordUser = async (req, res, next) => {
     let errors = validationResult(req);    
     if (!errors.isEmpty()) throw new Error(bad_request);
 
-    const user = await User.findOne({ username: req.body.username });
+    const email = req.body.email;
+    const user = await User.findOne({ email });
     if (!user) throw new Error(user_not_found);
 
-    status = 200;
+    let resetToken = crypto.randomBytes(64).toString('hex');
+    let passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex'); // encrypt
+    let passwordResetExpired = Date.now() + 10800000; // + 3 jam
+
+    let [resultUpdate] = await User.updateOne({ _id: user._id }, {
+      $set: {
+        token_forget_password: passwordResetToken,
+        expired_forget_password: passwordResetExpired
+      }
+    });
+    if (resultUpdate.affectedRows <= 0) throw(processError(message, invalid_request, stack_forget_password));
+
+    // send email token nya (resetToken)
+    sendEmail(email, resetToken, 'resetpassword');
+
+    status = 201;
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
+exports.resetPassword = async (req, res, next) => {
+  let { status, data, error, stack} = returnData();
+  try {
+    let errors = validationResult(req);    
+    if (!errors.isEmpty()) throw new Error(bad_request);
+
+    if (!req.params.token) throw new error(bad_request);
+
+    const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+    const user = await User.findOne({
+      token_forget_password: hashedToken
+    });
+
+    if (!user) throw new Error(bad_request);
+
+    if (Date.now() > +user.expired_forget_password) throw new Error(token_expired);
+
+    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+    await User.updateOne({
+      _id: user._id
+    }, {
+      $set: {
+        password: hashedPassword
+      }
+    });
+    status = 204;
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);

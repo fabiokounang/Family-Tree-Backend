@@ -29,7 +29,7 @@ exports.getAllLog = async (req, res, next) => {
       path: 'user',
       select: 'username'
     });
-    console.log(results)
+    
     const totalDocument = await Log.find(queryParams.objFilterSearch).countDocuments();
 
     // 3) bentuk response data dan set status code = 200

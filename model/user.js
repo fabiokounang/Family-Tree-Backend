@@ -105,6 +105,14 @@ const userSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'theme'
   },
+  token_forget_password: {
+    type: String,
+    default: null
+  },
+  expired_forget_password: {
+    type: Number,
+    default: null
+  },
   created_at: {
     type: String,
     default: Date.now

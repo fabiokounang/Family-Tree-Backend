@@ -123,12 +123,10 @@ exports.updateText = async (req, res, next) => {
 
     // 3) query find admin by id
     let theme = await Theme.findById(id).select(['theme', 'text', 'color']);
-    console.log(theme)
     if (!theme) throw(theme_not_found);
 
     //4) query update data marga
     theme.text = req.body.text || theme.text;
-    console.log(theme, req.body)
     await theme.save({validateBeforeSave: true});
 
     data = theme.toObject();

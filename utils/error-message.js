@@ -33,6 +33,7 @@ module.exports = {
   no_anggota_required: 'User unique id required',
   phone_required: 'Phone number required',
   email_required: 'Email required',
+  email_not_valid: 'Invalid email',
   gender_required: 'Gender required',
   gender_not_valid: 'Gender not valid',
   first_name_latin_required: 'Latin first name required',
@@ -60,5 +61,10 @@ module.exports = {
   description_max_200: 'Description max 200 characters',
   life_status_required: 'Life status required',
   user_broadcast_required: 'User broadcast required',
-  user_broadcast_min_1: 'User broadcast required'
+  user_broadcast_min_1: 'User broadcast required',
+  token_expired: 'Token expired',
+  expired_date_required: 'Expired date required',
+  title_required: 'Title required',
+  occasion_unique: 'Occasion title unique',
+  occasion_not_found: 'Occasion not found'
 }
