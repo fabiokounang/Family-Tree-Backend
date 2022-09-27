@@ -10,7 +10,6 @@ const Province = require('../model/province');
 const handleError = require("../helper-function/handle-error");
 const returnData = require("../helper-function/return-data");
 const processQueryParameter = require('../helper-function/process-query-parameter');
-const sendCookie = require('../helper-function/send-cookie');
 const sendResponse = require("../helper-function/send-response");
 
 const { username_unique, user_not_found, bad_request, password_wrong, token_expired } = require("../utils/error-message");
@@ -29,15 +28,11 @@ exports.signupUser = async (req, res, next) => {
 
     const lastUser = await User.findOne().sort({ created_at: -1 }).limit(1);
     let inc = null
-    if (!lastUser) inc = '0001';
+    if (!lastUser) inc = '000000001';
     else inc = +lastUser.no_anggota + 1;
 
-    const genderNo = req.body.gender ? 1 : 0;
-    const provinceNo = req.body.place_of_birth;
-    const cityNo = req.body.city_of_residence;
     const incrementNumber = inc;
-
-    const anggotaNum = `${genderNo}${provinceNo}${cityNo}${incrementNumber}`;
+    const anggotaNum = `${incrementNumber}`;
 
     // 3) create new user
     const newUser = new User({
@@ -109,11 +104,31 @@ exports.signinUser = async (req, res, next) => {
       token: token
     }
 
-    sendCookie('user', req, res, token);
-
     data = objUser;
     status = 200;
   } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
+exports.uploadImage = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+  try {
+    let errors = validationResult(req);    
+    if (!errors.isEmpty()) throw new Error(bad_request);
+
+    const user = await User.findById(req.user._id).select('image');
+    if (!user) throw new Error(user_not_found);
+    user.image = req.file.filename;
+
+    await user.save();
+
+    status = 204;
+  } catch (err) {
+    // console.log(err)
     stack = err.message || err.stack || err;
     error = handleError(err);
   } finally {
@@ -330,7 +345,6 @@ exports.updatePasswordUser = async (req, res, next) => {
 
 exports.signoutUser = async (req, res, next) => {
   try {
-    sendCookie('user', req, res, '', true);
     sendResponse(res, 200);
   } catch (error) {
     sendResponse(res, 200);

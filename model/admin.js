@@ -28,6 +28,10 @@ const adminSchema = new Schema({
     required: [true, status_required],
     default: 1 // 1 active & 2 non active
   },
+  province: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'province'
+  }],
   created_at: {
     type: String,
     default: Date.now

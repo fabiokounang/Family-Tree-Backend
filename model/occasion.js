@@ -10,6 +10,14 @@ const occasionSchema = new Schema({
     unique: true,
     maxlength: 200
   },
+  type: {
+    type: Number,
+    required: true // 1 add poin, 2 decrease poin
+  },
+  point: {
+    type: Number,
+    required: true
+  },
   expired_date: {
     type: Number,
     required: [true, expired_date_required]

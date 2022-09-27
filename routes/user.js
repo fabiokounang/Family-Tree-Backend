@@ -9,9 +9,11 @@ const checkAuthUser = require('../middleware/check-auth-user');
 const signinUserValidation = require('../middleware/express-validation/user/signin-user-validation');
 const signupUserValidation = require('../middleware/express-validation/user/signup-user-validation');
 const updateUserValidation = require('../middleware/express-validation/user/update-user-validation');
+const { processImage } = require('../middleware/multer');
 
 router.post('/signup', signupUserValidation, userController.signupUser);
 router.post('/signin', signinUserValidation, userController.signinUser);
+router.post('/uploadimage', checkAuthUser, processImage, userController.uploadImage);
 // router.post('/forgetpassword', forgetPasswordUserValidation, userController.forgetPasswordUser);
 router.post('/signout', checkAuthUser, userController.signoutUser);
 router.post('/update/:id', checkAuthUser, updateUserValidation, userController.updateUser);

@@ -1,5 +1,5 @@
 const { body } = require('express-validator');
-const { username_required, password_required, password_min_8, username_alphanumeric, confirmation_password_required, password_match, bad_request, role_required, role_not_valid, username_max_30 } = require('../../../utils/error-message');
+const { username_required, password_required, password_min_8, username_alphanumeric, confirmation_password_required, password_match, bad_request, role_required, role_not_valid, username_max_30, province_required } = require('../../../utils/error-message');
 
 module.exports = [
   body('username')
@@ -31,5 +31,7 @@ module.exports = [
       } catch (error) {
         throw(error.stack || bad_request);
       }
-    })
+    }),
+  body('province')
+    .notEmpty().withMessage(province_required),
 ]

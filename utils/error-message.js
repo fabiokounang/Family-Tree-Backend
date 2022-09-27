@@ -27,6 +27,7 @@ module.exports = {
   user_not_active: 'User not active',
   province_not_found: 'Province not found',
   province_unique: 'Province unique',
+  province_required: 'Province required',
   city_unique: 'City unique',
   auth: 'Not Authenticated',
   // User 
@@ -66,5 +67,8 @@ module.exports = {
   expired_date_required: 'Expired date required',
   title_required: 'Title required',
   occasion_unique: 'Occasion title unique',
-  occasion_not_found: 'Occasion not found'
+  occasion_not_found: 'Occasion not found',
+  image_not_valid: 'Image not valid',
+  failed_upload_image: 'Failed upload image',
+  image_size_over: 'Image size maximum 2mb'
 }

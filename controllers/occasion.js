@@ -20,7 +20,9 @@ exports.createOccasion = async (req, res, next) => {
 
     const newOccasion = new Occasion({
       title: req.body.title,
-      expired_date: req.body.expired_date
+      expired_date: req.body.expired_date,
+      type: req.body.type,
+      point: req.body.point
     });
 
     await newOccasion.save();

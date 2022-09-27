@@ -2,7 +2,8 @@ const jwt = require('jsonwebtoken');
 const bcryptjs = require('bcryptjs');
 const { validationResult } = require('express-validator');
 
-const Admin = require("../model/admin")
+const Admin = require("../model/admin");
+const Province = require('../model/province');
 
 const handleError = require("../helper-function/handle-error");
 const processErrorForm = require("../helper-function/process-error-form");
@@ -25,11 +26,19 @@ exports.createAdmin = async (req, res, next) => {
     const admin = await Admin.findOne({ username: req.body.username });
     if (admin) throw new Error(username_unique);
 
+    const provinces = await Province.find({
+      '_id': { 
+        $in: req.body.province
+      }
+    });
+    if (provinces.length != req.body.province.length) throw new Error(bad_request);
+
     // 3) create new admin
     const newAdmin = new Admin({
       username: req.body.username,
       password: req.body.password,
-      role: req.body.role
+      role: req.body.role,
+      province: req.body.province
     });
 
     const result = await newAdmin.save();
@@ -96,7 +105,11 @@ exports.getAllAdmin = async (req, res, next) => {
     const queryParams = processQueryParameter(req, 'created_at', ['username']);
 
     // 2) query data dan query count total
-    const results = await Admin.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['username', 'status', 'role', 'created_at']);
+    const results = await Admin.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['username', 'status', 'role', 'province', 'created_at']).populate({
+      path: 'province',
+      select: ['code', 'province']
+    });
+    
     const totalDocument = await Admin.find(queryParams.objFilterSearch).countDocuments();
 
     // 3) bentuk response data dan set status code = 200
