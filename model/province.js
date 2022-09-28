@@ -8,7 +8,8 @@ const provinceSchema = new Schema({
   },
   province: {
     type: String,
-    required: true
+    required: true,
+    lowercase: true
   },
   created_at: {
     type: String,

@@ -35,7 +35,7 @@ exports.createCalendar = async (req, res, next) => {
     // 4) bentuk response data dan set status code = 201
     status = 201;
 
-    createLog(req.user_id, 'create new calendar');
+    createLog(req.user._id, 'create new calendar');
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -68,7 +68,7 @@ exports.updateCalendar = async (req, res, next) => {
 
     status = 204;
 
-    createLog(req.user_id, 'update calendar');
+    createLog(req.user._id, 'update calendar');
 
   } catch (err) {
     stack = err.message || err.stack || err;
@@ -84,7 +84,7 @@ exports.deleteCalendar = async (req, res, next) => {
     const id = req.params.id;
     await Calendar.deleteOne({_id: id});
     status = 204;
-    createLog(req.user_id, 'delete calendar');
+    createLog(req.user._id, 'delete calendar');
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -142,7 +142,7 @@ exports.updateStatusCalendar = async (req, res, next) => {
     await calendar.save();
 
     status = 204;
-    createLog(req.user_id, 'update status calendar');
+    createLog(req.user._id, 'update status calendar');
 
   } catch (err) {
     stack = err.message || err.stack || err;

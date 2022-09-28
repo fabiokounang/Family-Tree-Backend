@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const { expired_date_required, title_required } = require('../utils/error-message');
 const Schema = mongoose.Schema;
 
-
 const occasionSchema = new Schema({
   title: {
     type: String,
@@ -32,9 +31,8 @@ const occasionSchema = new Schema({
 });
 
 occasionSchema.virtual('status').get(function() {
-  return Date.now() < this.created_at ? 1 : 2;
+  return Date.now() < this.expired_date ? 1 : 2;
 });
-
 
 const Occasion = mongoose.model('occasion', occasionSchema);
 

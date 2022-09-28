@@ -70,5 +70,8 @@ module.exports = {
   occasion_not_found: 'Occasion not found',
   image_not_valid: 'Image not valid',
   failed_upload_image: 'Failed upload image',
-  image_size_over: 'Image size maximum 2mb'
+  image_size_over: 'Image size maximum 2mb',
+  point_not_enough: 'Point is not enough',
+  already_registered: 'You already redeem this event',
+  occasion_expired: 'Event already ended'
 }

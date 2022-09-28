@@ -12,7 +12,8 @@ const citySchema = new Schema({
   },
   city: {
     type: String,
-    required: true
+    required: true,
+    lowercase: true
   },
   created_at: {
     type: String,

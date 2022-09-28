@@ -24,7 +24,7 @@ exports.createProvince = async (req, res, next) => {
 
     // 3) create new province
     const lastProvince = await Province.find().sort({ created_at: -1 }).limit(1);
-    let inc = null
+    let inc = null;
     if (lastProvince.length <= 0) inc = '01';
     else inc = +lastProvince[0].code + 1;
 
@@ -61,16 +61,11 @@ exports.createCity = async (req, res, next) => {
     if (!errors.isEmpty()) throw new Error(bad_request);
 
     // 2) query find city exist / tidak
-    console.log(req.body);
-    const province = await City.findOne({ provinceId: req.body.province, city: req.body.city });
-    if (province) throw new Error(city_unique);
+    const city = await City.findOne({ city: req.body.city });
+    if (city) throw new Error(city_unique);
 
-    // 3) create new province
-    const lastCity = await City.find().sort({ created_at: -1 }).limit(1);
-    console.log(lastCity)
-    let inc = null
-    if (lastCity.length <= 0) inc = 0;
-    else inc = +lastCity[0].code + 1;
+    const cities = await City.find({ provinceId: req.body.province });
+    const inc = (cities.length -1) + 1;
 
     const newCity = new City({
       code: inc,

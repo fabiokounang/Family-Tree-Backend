@@ -42,7 +42,10 @@ module.exports = [
     .isAlpha().withMessage(first_name_latin_alpha)
     .isLength({ max: 200 }).withMessage(first_name_latin_max_200)
     .trim(),
-  body('last_name_latin'),
+  body('last_name_latin')
+    .notEmpty().withMessage(last_name_latin_required)
+    .isAlpha().withMessage(last_name_latin_alpha)
+    .isLength({ max: 200 }).withMessage(last_name_latin_max_200),
   body('chinese_name'),
   body('life_status'),
   body('address'),

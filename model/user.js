@@ -74,15 +74,15 @@ const userSchema = new Schema({
     required: [true, place_of_birth_required],
     trim: true
   },
+  email: {
+    type: String,
+    trim: true
+  },
   phone: {
     type: String,
     required: [true, phone_required],
     minlength: 10,
     maxlength: 14,
-    trim: true
-  },
-  email: {
-    type: String,
     trim: true
   },
   wechat: {

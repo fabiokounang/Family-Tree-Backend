@@ -33,5 +33,5 @@ module.exports = [
       }
     }),
   body('province')
-    .notEmpty().withMessage(province_required),
+    .isArray().withMessage(province_required),
 ]

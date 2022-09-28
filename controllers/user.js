@@ -14,6 +14,7 @@ const sendResponse = require("../helper-function/send-response");
 
 const { username_unique, user_not_found, bad_request, password_wrong, token_expired } = require("../utils/error-message");
 const sendEmail = require('../helper-function/send-email');
+const Point = require('../model/point');
 
 exports.signupUser = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
@@ -28,11 +29,15 @@ exports.signupUser = async (req, res, next) => {
 
     const lastUser = await User.findOne().sort({ created_at: -1 }).limit(1);
     let inc = null
-    if (!lastUser) inc = '000000001';
+    if (!lastUser) inc = '0001';
     else inc = +lastUser.no_anggota + 1;
 
+    const genderNo = req.body.gender ? 1 : 0;
+    const provinceNo = req.body.place_of_birth;
+    const cityNo = req.body.city_of_residence;
     const incrementNumber = inc;
-    const anggotaNum = `${incrementNumber}`;
+
+    const anggotaNum = `${genderNo}${provinceNo}${cityNo}${incrementNumber}`;
 
     // 3) create new user
     const newUser = new User({
@@ -253,6 +258,12 @@ exports.getOneUser = async (req, res, next) => {
     user.life_status = user.life_status == 1 ? 'alive' : 'dead';
     user.status = user.status == 1 ? 'active' : 'not active';
     user.gender = user.gender == 1 ? 'male' : 'female';
+
+    const userPoints = await Point.find({ user: req.user._id });
+    const total = userPoints.reduce((currentValue, value) => {
+      return currentValue + value.point;
+    }, 0);
+    user.point = total;
 
     // 3) bentuk response data dan set status code = 200
     data = user;

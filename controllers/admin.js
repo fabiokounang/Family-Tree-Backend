@@ -12,14 +12,14 @@ const returnData = require('../helper-function/return-data');
 const sendResponse = require('../helper-function/send-response');
 const { createLog } = require('./log');
 
-const { username_unique, bad_request, admin_not_found, password_wrong } = require("../utils/error-message");
+const { username_unique, bad_request, admin_not_found, password_wrong, province_required } = require("../utils/error-message");
 
 
 exports.createAdmin = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   try {
     // 1) validasi request body
-    const errors = validationResult(req);    
+    const errors = validationResult(req);   
     if (!errors.isEmpty()) throw new Error(bad_request);
 
     // 2) query find admin exist / tidak
@@ -32,6 +32,9 @@ exports.createAdmin = async (req, res, next) => {
       }
     });
     if (provinces.length != req.body.province.length) throw new Error(bad_request);
+    if (req.body.role == 2) {
+      if (!req.body.province || req.body.province.length == 0) throw new Error(province_required);
+    }
 
     // 3) create new admin
     const newAdmin = new Admin({
@@ -110,8 +113,8 @@ exports.getAllAdmin = async (req, res, next) => {
       select: ['code', 'province']
     });
     
+    const province = await Province.find().select('-__v');
     const totalDocument = await Admin.find(queryParams.objFilterSearch).countDocuments();
-
     // 3) bentuk response data dan set status code = 200
     data = {
       page: queryParams.page,
@@ -119,7 +122,13 @@ exports.getAllAdmin = async (req, res, next) => {
       max: Math.ceil(totalDocument / queryParams.limit),
       pageSize: [10, 25, 50, 100, 200],
       total: totalDocument,
-      values: results
+      values: results,
+      province: province.map((val) => {
+        return {
+          id: val._id,
+          name: val.province
+        }
+      })
     };
     status = 200;
   } catch (err) {
