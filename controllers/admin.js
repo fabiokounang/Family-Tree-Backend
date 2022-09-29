@@ -112,10 +112,12 @@ exports.getAllAdmin = async (req, res, next) => {
       path: 'province',
       select: ['code', 'province']
     });
-    
+
+    // 3) query province untuk dropdown di admin
     const province = await Province.find().select('-__v');
     const totalDocument = await Admin.find(queryParams.objFilterSearch).countDocuments();
-    // 3) bentuk response data dan set status code = 200
+
+    // 4) bentuk response data dan set status code = 200
     data = {
       page: queryParams.page,
       limit: queryParams.limit,
@@ -242,17 +244,17 @@ exports.changePassword = async (req, res, next) => {
       throw(error);
     }
 
+    // 3) find admin by id
     let admin = await Admin.findById(id).select(['password, role']);
     if (!admin) throw(admin_not_found);
 
-    // proses update data admin
+    // 4) proses update data admin
     admin.password = req.body.password || admin.password;
     await admin.save({validateBeforeSave: true});
 
     status = 200;
 
     createLog(req.user._id, 'change password admin (self)');
-
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -276,8 +278,7 @@ exports.updateStatus = async (req, res, next) => {
     let admin = await Admin.findById(id).select(['status role']);
     if (!admin) throw(admin_not_found);
 
-
-    // deactivate status
+    // 4) deactivate status
     admin.status = req.body.status || admin.status;
     await admin.save({validateBeforeSave: true});
     
