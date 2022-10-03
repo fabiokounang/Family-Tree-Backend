@@ -21,6 +21,7 @@ const point = require('./routes/point');
 const log = require('./routes/log');
 
 app.enable('trust proxy');
+app.use(express.static('public'))
 app.use(cors({ credentials: true, origin: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

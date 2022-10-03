@@ -144,6 +144,26 @@ exports.getAllCityByProvince = async (req, res, next) => {
   }
 }
 
+exports.getAllCity = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+
+  try {    
+    // 1) query city
+    const results = await City.find();
+
+    // 2) bentuk response data dan set status code = 200
+    data = {
+      values: results
+    };
+    status = 200;
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
 exports.updateProvince = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   try {

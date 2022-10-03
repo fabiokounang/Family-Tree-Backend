@@ -14,11 +14,12 @@ const { processImage } = require('../middleware/multer');
 router.post('/signup', signupUserValidation, userController.signupUser);
 router.post('/signin', signinUserValidation, userController.signinUser);
 router.post('/uploadimage', checkAuthUser, processImage, userController.uploadImage);
+router.post('/changepassword', checkAuthUser, userController.changePassword);
 // router.post('/forgetpassword', forgetPasswordUserValidation, userController.forgetPasswordUser);
 router.post('/signout', checkAuthUser, userController.signoutUser);
+router.post('/self', checkAuthUser, userController.getOneUser);
 router.post('/update/:id', checkAuthUser, updateUserValidation, userController.updateUser);
-router.post('/admin/:id', checkAuthUser, userController.getOneUser);
-router.post('/self/:id', checkAuthAdmin, userController.getOneUser);
+router.post('/admin/:id', checkAuthAdmin, userController.getOneUser);
 router.post('/', checkAuthAdmin, userController.getAllUser);
 
 module.exports = router;

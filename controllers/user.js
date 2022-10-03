@@ -12,7 +12,7 @@ const returnData = require("../helper-function/return-data");
 const processQueryParameter = require('../helper-function/process-query-parameter');
 const sendResponse = require("../helper-function/send-response");
 
-const { username_unique, user_not_found, bad_request, password_wrong, token_expired } = require("../utils/error-message");
+const { username_unique, user_not_found, bad_request, password_wrong, token_expired, password_match } = require("../utils/error-message");
 const sendEmail = require('../helper-function/send-email');
 const Point = require('../model/point');
 
@@ -81,6 +81,7 @@ exports.signupUser = async (req, res, next) => {
 }
 
 exports.signinUser = async (req, res, next) => {
+  console.log('Login user')
   let { status, data, error, stack } = returnData();
   try {
 
@@ -92,6 +93,11 @@ exports.signinUser = async (req, res, next) => {
 
     const isPasswordCorrect = await bcryptjs.compare(req.body.password, user.password);
     if (!isPasswordCorrect) throw new Error(password_wrong);
+
+    const userPoints = await Point.find({ user: user._id });
+    const totalPoint = userPoints.reduce((currentValue, value) => {
+      return currentValue + value.point;
+    }, 0);
 
     const token = jwt.sign({ _id: user._id, username: user.username, status: user.status }, process.env.SECRET_KEY, { algorithm: 'HS512'}, { expiresIn: "7d" });
     let objUser = {
@@ -106,7 +112,10 @@ exports.signinUser = async (req, res, next) => {
       status: user.status,
       no_anggota: user.no_anggota,
       theme: user.theme || '',
-      token: token
+      token: token,
+      point: totalPoint,
+      remark: user.remark,
+      image: user.image
     }
 
     data = objUser;
@@ -244,7 +253,7 @@ exports.getOneUser = async (req, res, next) => {
 
   try {
     // 1) set id admin
-    const id = req.params.id;
+    const id = req.params.id || req.user._id;
     if (!id) throw new Error(bad_request);
 
     // 2) query data admin by id
@@ -325,6 +334,35 @@ exports.updateUser = async (req, res, next) => {
     sendResponse(res, status, data, error, stack);
   }
 } 
+
+exports.changePassword = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+  try {
+    // 2) validasi request body
+    let errors = validationResult(req);    
+    if (!errors.isEmpty()) throw new Error(bad_request);
+
+    // 3) query find user by id
+    let user = await User.findById(req.user._id).select(['username', 'password', 'role']);
+    if (!user) throw(user_not_found);
+
+    const isPasswordCorrect = await bcryptjs.compare(req.body.old_password, user.password);
+    if (!isPasswordCorrect) throw new Error(password_wrong);
+    if (req.body.new_password != req.body.confirmation_password) throw new Error(password_match);
+
+    //4) query update password user
+    user.password = req.body.new_password || user.password;
+
+    await user.save({validateBeforeSave: true});
+
+    status = 204;
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
 
 exports.updatePasswordUser = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
