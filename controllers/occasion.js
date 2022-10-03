@@ -65,7 +65,7 @@ exports.registerUserOccasion = async (req, res, next) => {
     if (Date.now() > occasion.expired_date) throw new Error(occasion_expired);
 
     // 5) find point history, cek duplicate
-    const isRegistered = await Point.findOne({ user: user._id, occastion: occasion._id });
+    const isRegistered = await Point.findOne({ user: user._id, occasion: occasion._id });
     if (isRegistered) throw new Error(already_registered);
 
     // 6) if type potong point, cek user saldo balance enough / no
