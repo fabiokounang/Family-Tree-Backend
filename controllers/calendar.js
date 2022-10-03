@@ -152,6 +152,28 @@ exports.updateStatusCalendar = async (req, res, next) => {
   }
 }
 
+exports.getOneCalendarAdmin = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+
+  try {
+    // 1) query data calendar aktif
+    const id = req.params.id;
+    const result = await Calendar.findById(id).lean();
+    result.calendar = JSON.parse(result.calendar);
+
+    // 2) bentuk response data dan set status code = 200
+    data = {
+      value: result
+    };
+    status = 200;
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
 exports.getOneCalendar = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
 

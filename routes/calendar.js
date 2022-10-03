@@ -12,8 +12,8 @@ router.post('/create', checkAuthAdmin, createCalendarValidation, calendarControl
 router.post('/update/:id', checkAuthAdmin, updateCalendarValidation, calendarController.updateCalendar);
 router.post('/update_status/:id', checkAuthAdmin, calendarController.updateStatusCalendar);
 router.post('/delete/:id', checkAuthAdmin, calendarController.deleteCalendar);
-router.post('/admin/active/:id', checkAuthAdmin, calendarController.getOneCalendar);
-router.post('/user/active', calendarController.getOneCalendar);
+router.post('/admin/active/:id', checkAuthAdmin, calendarController.getOneCalendarAdmin);
+router.post('/user/active', checkAuthUser, calendarController.getOneCalendar);
 router.post('/', checkAuthAdmin, calendarController.getAllCalendar);
 
 // [
