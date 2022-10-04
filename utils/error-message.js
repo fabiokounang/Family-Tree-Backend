@@ -1,6 +1,6 @@
 module.exports = {
   username_required: 'Username required',
-  username_unique: 'Username already registered',
+  user_unique: 'Username, email, phone number and wechat must be unique',
   username_max_30: 'Username max 30 characters',
   username_alphanumeric: 'Username is alphanumeric only',
   password_required: 'Password required',
@@ -33,6 +33,8 @@ module.exports = {
   // User 
   no_anggota_required: 'User unique id required',
   phone_required: 'Phone number required',
+  phone_not_valid: 'Phone must be numeric',
+  phone_min_max_10_14: 'Phone min 10 and max 14 number',
   email_required: 'Email required',
   email_not_valid: 'Invalid email',
   gender_required: 'Gender required',
@@ -44,6 +46,7 @@ module.exports = {
   last_name_latin_alpha: 'Latin last name must be alpha only',
   last_name_latin_max_200: 'Latin last name max 200 characters',
   chinese_name_required: 'Chinese name required',
+  chinese_name_max_200: 'Chinese name max 200 characters',
   image_required: 'Image required',
   address_required: 'Address required',
   address_max_300: 'Address max 300 characters',

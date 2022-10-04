@@ -12,7 +12,7 @@ const returnData = require("../helper-function/return-data");
 const processQueryParameter = require('../helper-function/process-query-parameter');
 const sendResponse = require("../helper-function/send-response");
 
-const { username_unique, user_not_found, bad_request, password_wrong, token_expired, password_match } = require("../utils/error-message");
+const { user_unique, user_not_found, bad_request, password_wrong, token_expired, password_match } = require("../utils/error-message");
 const sendEmail = require('../helper-function/send-email');
 const Point = require('../model/point');
 
@@ -21,27 +21,29 @@ exports.signupUser = async (req, res, next) => {
   try {
     // 1) validasi request body
     const errors = validationResult(req);
+    console.log(errors.array())
     if (!errors.isEmpty()) throw new Error(bad_request);
 
     // 2) query find user exist / tidak
-    const user = await User.findOne({ username: req.body.username });
-    if (user) throw new Error(username_unique);
+    const user = await User.findOne({ username: req.body.username, email: req.body.email, phone: req.body.phone, wechat: req.body.wechat });
+    console.log(user)
+    if (user) throw new Error(user_unique);
 
     const province = await Province.findById(req.body.place_of_birth);
     const city = await City.findById(req.body.city_of_residence);
     if (!province || !city) throw new Error(bad_request);
-
     const lastUser = await User.findOne().sort({ created_at: -1 }).limit(1);
+    
     let inc = null
-    if (!lastUser) inc = '0001';
-    else inc = +lastUser.no_anggota + 1;
+    if (!lastUser) inc = 1;
+    else inc = +lastUser.no_anggota.slice(2) + 1;
 
     const genderNo = req.body.gender ? 1 : 0;
-    const provinceNo = province._id;
-    const cityNo = city._id;
+    const provinceNo = province.code;
+    const cityNo = city.code;
     const incrementNumber = inc;
 
-    const anggotaNum = `${genderNo}${provinceNo}${cityNo}${incrementNumber}`;
+    const anggotaNum = `${provinceNo}${incrementNumber}`;
 
     // 3) create new user
     const newUser = new User({
@@ -74,6 +76,7 @@ exports.signupUser = async (req, res, next) => {
       fullname: result.fullname,
       date_of_birth: result.date_of_birth,
       gender: result.gender,
+      no_anggota: result.no_anggota
     }
     status = 201;
   } catch (err) {
