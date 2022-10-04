@@ -21,6 +21,7 @@ exports.createAdmin = async (req, res, next) => {
     // 1) validasi request body
     const errors = validationResult(req);   
     if (!errors.isEmpty()) throw new Error(bad_request);
+    if (req.user.role == 2) throw new Error(bad_request);
 
     // 2) query find admin exist / tidak
     const admin = await Admin.findOne({ username: req.body.username });
@@ -181,10 +182,13 @@ exports.updateAdmin = async (req, res, next) => {
     // 3) query find admin by id
     let admin = await Admin.findById(id).select(['username', 'role']);
     if (!admin) throw(admin_not_found);
+    if (admin.role == 2 && (!req.body.province || req.body.province.length <= 0)) throw(province_required);
 
     //4) query update data admin
     admin.username = req.body.username || admin.username;
     admin.role = req.body.role || admin.role;
+    admin.province = req.body.province || admin.province;
+
 
     await admin.save({validateBeforeSave: true});
     data = admin.toObject();

@@ -69,11 +69,6 @@ const userSchema = new Schema({
     required: [true, date_of_birth_required],
     trim: true
   },
-  place_of_birth: {
-    type: String,
-    required: [true, place_of_birth_required],
-    trim: true
-  },
   email: {
     type: String,
     trim: true
@@ -89,9 +84,13 @@ const userSchema = new Schema({
     type: String,
     trim: true
   },
+  place_of_birth: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'province'
+  },
   city_of_residence: {
-    type: String,
-    trim: true
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'city'
   },
   postal_address: {
     type: String,

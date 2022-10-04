@@ -1,3 +1,5 @@
+const { default: mongoose } = require("mongoose");
+
 module.exports = (req, sortAttr = 'username', searchAvailable = ['username']) => {
   let page = req.body.page ? +req.body.page : 0;
   let limit = req.body.limit ? +req.body.limit : 10;
@@ -10,9 +12,17 @@ module.exports = (req, sortAttr = 'username', searchAvailable = ['username']) =>
     let filteredData = req.body.filter ? Object.keys(req.body.filter) : {};
     if (filteredData.length > 0) {
       filteredData.forEach((key) => {
-        objFilterSearch = Object.assign(objFilterSearch, {
-          [key]: req.body.filter[key]
-        });
+        if (key === 'province') {
+          objFilterSearch = Object.assign(objFilterSearch, {
+            place_of_birth: { 
+              $in: req.body.filter[key]
+            }
+          });
+        } else {
+          objFilterSearch = Object.assign(objFilterSearch, {
+            [key]: req.body.filter[key]
+          });
+        }
       });
     }
 

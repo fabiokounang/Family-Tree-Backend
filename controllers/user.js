@@ -27,14 +27,18 @@ exports.signupUser = async (req, res, next) => {
     const user = await User.findOne({ username: req.body.username });
     if (user) throw new Error(username_unique);
 
+    const province = await Province.findById(req.body.place_of_birth);
+    const city = await City.findById(req.body.city_of_residence);
+    if (!province || !city) throw new Error(bad_request);
+
     const lastUser = await User.findOne().sort({ created_at: -1 }).limit(1);
     let inc = null
     if (!lastUser) inc = '0001';
     else inc = +lastUser.no_anggota + 1;
 
     const genderNo = req.body.gender ? 1 : 0;
-    const provinceNo = req.body.place_of_birth;
-    const cityNo = req.body.city_of_residence;
+    const provinceNo = province._id;
+    const cityNo = city._id;
     const incrementNumber = inc;
 
     const anggotaNum = `${genderNo}${provinceNo}${cityNo}${incrementNumber}`;
@@ -81,7 +85,6 @@ exports.signupUser = async (req, res, next) => {
 }
 
 exports.signinUser = async (req, res, next) => {
-  console.log('Login user')
   let { status, data, error, stack } = returnData();
   try {
 
@@ -224,12 +227,16 @@ exports.getAllUser = async (req, res, next) => {
 
   try {
     // 1) proses query parameter pagination etc
+    if (req.user.role === 2) {
+      if (req.body.filter) req.body.filter.province = req.user.province;
+      else req.body.filter = { province: req.user.province }
+    }
     const queryParams = processQueryParameter(req, 'created_at', ['username', 'fullname']);
 
     // 2) query data dan query count total
     const results = await User.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-password', '-__v']);
     const totalDocument = await User.find(queryParams.objFilterSearch).countDocuments();
-
+ 
     // 3) bentuk response data dan set status code = 200
     data = {
       page: queryParams.page,
@@ -259,16 +266,16 @@ exports.getOneUser = async (req, res, next) => {
     // 2) query data admin by id
     const user = await User.findById(id).select(['-password', '-__v']).lean();
     if (!user) throw new Error(user_not_found);
-
-    const province = await Province.findOne({ code: user.place_of_birth });
-    const city = await City.findOne({ code: user.city_of_residence });
+    const province = await Province.findById(user.place_of_birth);
+    const city = await City.findById(user.city_of_residence);
     user.place_of_birth = province.province;
     user.city_of_residence = city.city;
     user.life_status = user.life_status == 1 ? 'alive' : 'dead';
     user.status = user.status == 1 ? 'active' : 'not active';
     user.gender = user.gender == 1 ? 'male' : 'female';
 
-    const userPoints = await Point.find({ user: req.user._id });
+    const userPoints = await Point.find({ user: id });
+    console.log(userPoints);
     const total = userPoints.reduce((currentValue, value) => {
       return currentValue + value.point;
     }, 0);

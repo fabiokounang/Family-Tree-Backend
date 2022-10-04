@@ -1,5 +1,5 @@
 const { body } = require("express-validator");
-const { username_required, username_max_50, username_alphanumeric, role_required, role_not_valid, bad_request } = require("../../../utils/error-message");
+const { username_required, username_max_50, username_alphanumeric, role_required, role_not_valid, bad_request, province_required } = require("../../../utils/error-message");
 
 module.exports = [
   body('username')

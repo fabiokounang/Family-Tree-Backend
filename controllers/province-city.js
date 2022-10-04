@@ -65,7 +65,8 @@ exports.createCity = async (req, res, next) => {
     if (city) throw new Error(city_unique);
 
     const cities = await City.find({ provinceId: req.body.province });
-    const inc = (cities.length -1) + 1;
+    let inc = (cities.length -1) + 1;
+    inc = String(inc).length == 1 ? '0' + String(inc) : inc;
 
     const newCity = new City({
       code: inc,
