@@ -4,7 +4,7 @@ const returnData = require("../helper-function/return-data");
 const sendResponse = require("../helper-function/send-response");
 const Calendar = require("../model/calendar");
 
-const { calendar_not_found, bad_request, event_name_required } = require("../utils/error-message");
+const { calendar_not_found, event_name_required } = require("../utils/error-message");
 const { createLog } = require("./log");
 
 exports.createCalendar = async (req, res, next) => {
@@ -47,18 +47,24 @@ exports.createCalendar = async (req, res, next) => {
 exports.updateCalendar = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   try {
+    // 1) set id calendar
     const id = req.params.id;
 
+    // 2) cek calendar exist by id
     const calendar = await Calendar.findById(id).lean();
     if (!calendar) throw new Error(calendar_not_found);
     
+    // 3) parsing data calendar
     calendar.calendar = JSON.parse(calendar.calendar);
 
+    // 4) validasi name event
     const isNotValid = req.body.events.find(val => !val.name);
     if (isNotValid) throw new Error(event_name_required);
 
+    // 5) set event ke tanggal calendar
     calendar.calendar[req.body.month][req.body.day] = req.body.events;
 
+    // 6) update calendar by id
     await Calendar.updateOne({ _id : id }, {
       $set: {
         name: req.body.name,
@@ -66,10 +72,9 @@ exports.updateCalendar = async (req, res, next) => {
       }
     });
 
+    // 7) response status 204 & create log
     status = 204;
-
     createLog(req.user._id, 'update calendar');
-
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -81,9 +86,16 @@ exports.updateCalendar = async (req, res, next) => {
 exports.deleteCalendar = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   try {
+    // 1) set id calendar
     const id = req.params.id;
+
+    // 2) delete calendar by id
     await Calendar.deleteOne({_id: id});
+
+    // 3) response status 204
     status = 204;
+
+    // 4) create log
     createLog(req.user._id, 'delete calendar');
   } catch (err) {
     stack = err.message || err.stack || err;

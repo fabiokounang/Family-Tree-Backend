@@ -21,12 +21,10 @@ exports.signupUser = async (req, res, next) => {
   try {
     // 1) validasi request body
     const errors = validationResult(req);
-    console.log(errors.array())
     if (!errors.isEmpty()) throw new Error(bad_request);
 
     // 2) query find user exist / tidak
     const user = await User.findOne({ username: req.body.username, email: req.body.email, phone: req.body.phone, wechat: req.body.wechat });
-    console.log(user)
     if (user) throw new Error(user_unique);
 
     const province = await Province.findById(req.body.place_of_birth);
@@ -278,7 +276,6 @@ exports.getOneUser = async (req, res, next) => {
     user.gender = user.gender == 1 ? 'male' : 'female';
 
     const userPoints = await Point.find({ user: id });
-    console.log(userPoints);
     const total = userPoints.reduce((currentValue, value) => {
       return currentValue + value.point;
     }, 0);

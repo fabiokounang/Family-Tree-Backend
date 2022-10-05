@@ -1,16 +1,17 @@
 const { validationResult } = require('express-validator');
 
 const Theme = require('../model/theme');
+const User = require('../model/user');
 
 const processErrorForm = require('../helper-function/process-error-form');
 const returnData = require('../helper-function/return-data');
 const handleError = require('../helper-function/handle-error');
 const sendResponse = require('../helper-function/send-response');
 const processQueryParameter = require('../helper-function/process-query-parameter');
+
 const { createLog } = require('./log');
 
 const { theme_unique, theme_not_found } = require('../utils/error-message');
-const User = require('../model/user');
 
 exports.createTheme = async (req, res, next) => {
   let { status, data, error, stack } = returnData();

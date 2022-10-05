@@ -53,6 +53,9 @@ module.exports = {
   date_of_birth_required: 'Date of birth required',
   date_of_birth_not_valid: 'Date of birth is not a valid date',
   place_of_birth_required: 'Place of birth required',
+  city_required: 'City required',
+  postal_address_required: 'Postal address required',
+  postal_address_max_6: 'Postal address max 6 digit',
   month_required: 'Month required',
   month_numeric: 'Month must be numeric',
   day_required: 'Day required',
@@ -76,5 +79,6 @@ module.exports = {
   image_size_over: 'Image size maximum 2mb',
   point_not_enough: 'Point is not enough',
   already_registered: 'You already redeem this event',
-  occasion_expired: 'Event already ended'
+  occasion_expired: 'Event already ended',
+  file_size: 'File size is too large'
 }

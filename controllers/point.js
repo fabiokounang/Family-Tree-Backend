@@ -1,16 +1,9 @@
-const bcryptjs = require('bcryptjs');
-const { validationResult } = require('express-validator');
-
-const Occasion = require('../model/occasion');
-const User = require('../model/user');
+const Point = require('../model/point');
 
 const handleError = require("../helper-function/handle-error");
 const returnData = require("../helper-function/return-data");
 const sendResponse = require("../helper-function/send-response");
 const processQueryParameter = require('../helper-function/process-query-parameter');
-
-const { occasion_unique, bad_request, occasion_not_found, user_not_found, password_wrong, point_not_enough } = require('../utils/error-message');
-const Point = require('../model/point');
 
 exports.getUserPoint = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
