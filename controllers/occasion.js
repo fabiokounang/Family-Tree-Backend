@@ -45,19 +45,10 @@ exports.registerUserOccasion = async (req, res, next) => {
     // 1) validasi request user
     const id = req.params.id;
     if (!id) throw new Error(bad_request);
-    // const errors = validationResult(req);    
-    // if (!errors.isEmpty()) throw new Error(bad_request);
-
-    // // 2) find by username
-    // const user = await User.findOne({ username: req.body.username });
-    // if (!user) throw new Error(user_not_found);
-
-    // // 3) cek password
-    // const isPasswordCorrect = await bcryptjs.compare(req.body.password, user.password);
-    // if (!isPasswordCorrect) throw new Error(password_wrong);
 
     // 4) find occasion, cek expire
     const occasion = await Occasion.findById(id);
+    console.log(occasion)
     if (!occasion) throw new Error(occasion_not_found);
     if (occasion.status != 1) throw new Error(occasion_expired);
     if (Date.now() > occasion.expired_date) throw new Error(occasion_expired);

@@ -57,7 +57,13 @@ exports.getUserHistoryPoint = async (req, res, next) => {
     const queryParams = processQueryParameter(req, 'created_at', ['occasion']);
 
     // 2) query data dan query count total
-    const results = await Point.find({user: req.user._id, ...queryParams.objFilterSearch}).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-__v']);
+    const results = await Point.find({user: req.user._id, ...queryParams.objFilterSearch}).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-__v']).populate({
+      path: 'user',
+      select: ['username']
+    }).populate({
+      path: 'occasion',
+      select: ['title', 'type']
+    });
     const totalDocument = await Point.find({user: req.user._id, ...queryParams.objFilterSearch}).countDocuments();
     
     // 3) bentuk response data dan set status code = 200
@@ -93,6 +99,7 @@ exports.getAllUserHistoryPoint = async (req, res, next) => {
       path: 'occasion',
       select: ['title', 'type']
     });
+
     const totalDocument = await Point.find(queryParams.objFilterSearch).countDocuments();
     
     // 3) bentuk response data dan set status code = 200
