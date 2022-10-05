@@ -15,6 +15,7 @@ router.post('/signup', signupUserValidation, userController.signupUser);
 router.post('/signin', signinUserValidation, userController.signinUser);
 router.post('/uploadimage', checkAuthUser, processImage, userController.uploadImage);
 router.post('/changepassword', checkAuthUser, userController.changePassword);
+router.post('/fcm', checkAuthUser, userController.updateTokenFcm);
 // router.post('/forgetpassword', forgetPasswordUserValidation, userController.forgetPasswordUser);
 router.post('/signout', checkAuthUser, userController.signoutUser);
 router.post('/self', checkAuthUser, userController.getOneUser);

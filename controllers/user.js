@@ -397,7 +397,33 @@ exports.updatePasswordUser = async (req, res, next) => {
   } finally {
     sendResponse(res, status, data, error, stack);
   }
-} 
+}
+
+exports.updateTokenFcm = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+  try {
+    // 1) set id user
+    const id = req.user._id;
+
+    // 2) validasi request body
+    if (!req.body.token) throw new Error(bad_request);
+
+    // 3) query find user by id
+    let user = await User.findById(id).select(['username', 'role', 'password']);
+    if (!user) throw(user_not_found);
+
+    user.token_fcm = req.body.token || user.token_fcm;
+    await user.save({validateBeforeSave: true});
+
+    data = user.toObject();
+    status = 200;
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
 
 exports.signoutUser = async (req, res, next) => {
   try {

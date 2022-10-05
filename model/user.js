@@ -112,6 +112,10 @@ const userSchema = new Schema({
     type: Number,
     default: null
   },
+  token_fcm: {
+    type: String,
+    default: null
+  },
   created_at: {
     type: String,
     default: Date.now
