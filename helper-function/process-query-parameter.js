@@ -18,6 +18,12 @@ module.exports = (req, sortAttr = 'username', searchAvailable = ['username']) =>
               $in: req.body.filter[key]
             }
           });
+        } else if (key === 'token_fcm') {
+          objFilterSearch = Object.assign(objFilterSearch, {
+            [key]: {
+              $ne: null
+            }
+          });
         } else {
           objFilterSearch = Object.assign(objFilterSearch, {
             [key]: req.body.filter[key]

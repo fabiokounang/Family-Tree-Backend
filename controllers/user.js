@@ -232,7 +232,9 @@ exports.getAllUser = async (req, res, next) => {
       if (req.body.filter) req.body.filter.province = req.user.province;
       else req.body.filter = { province: req.user.province }
     }
+
     const queryParams = processQueryParameter(req, 'created_at', ['username', 'fullname']);
+    console.log(queryParams.objFilterSearch);
 
     // 2) query data dan query count total
     const results = await User.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-password', '-__v']);
@@ -412,8 +414,10 @@ exports.updateTokenFcm = async (req, res, next) => {
     let user = await User.findById(id).select(['username', 'role']);
     if (!user) throw(user_not_found);
 
-    user.token_fcm = req.body.token || user.token_fcm;
-    await user.save({validateBeforeSave: true});
+    if (!user.token_fcm) {
+      user.token_fcm = req.body.token || user.token_fcm;
+      await user.save({validateBeforeSave: true});
+    }
 
     data = user.toObject();
     status = 200;
