@@ -409,7 +409,7 @@ exports.updateTokenFcm = async (req, res, next) => {
     if (!req.body.token) throw new Error(bad_request);
 
     // 3) query find user by id
-    let user = await User.findById(id).select(['username', 'role', 'password']);
+    let user = await User.findById(id).select(['username', 'role']);
     if (!user) throw(user_not_found);
 
     user.token_fcm = req.body.token || user.token_fcm;
