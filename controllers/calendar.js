@@ -4,7 +4,7 @@ const returnData = require("../helper-function/return-data");
 const sendResponse = require("../helper-function/send-response");
 const Calendar = require("../model/calendar");
 
-const { calendar_not_found, event_name_required } = require("../utils/error-message");
+const { calendar_not_found, event_name_required, bad_request } = require("../utils/error-message");
 const { createLog } = require("./log");
 
 exports.createCalendar = async (req, res, next) => {
@@ -19,7 +19,10 @@ exports.createCalendar = async (req, res, next) => {
       const daysInCurrentMonth = getDaysInMonth(currentYear, i);
       Array.from(Array(daysInCurrentMonth + 1).keys()).slice(1).forEach((day) => {
         arrCalendar[i] = Object.assign({}, arrCalendar[i], {
-          [day]: []
+          [day]: {
+            events: [],
+            color: ''
+          }
         })
       });
     }
@@ -62,7 +65,9 @@ exports.updateCalendar = async (req, res, next) => {
     if (isNotValid) throw new Error(event_name_required);
 
     // 5) set event ke tanggal calendar
-    calendar.calendar[req.body.month][req.body.day] = req.body.events;
+    calendar.calendar[req.body.month][req.body.day] = Object.assign({}, calendar.calendar[req.body.month][req.body.day], {
+      events: req.body.events
+    });
 
     // 6) update calendar by id
     await Calendar.updateOne({ _id : id }, {
@@ -192,9 +197,21 @@ exports.getOneCalendar = async (req, res, next) => {
   try {
     // 1) query data calendar aktif
     const result = await Calendar.findOne({ status: 1 }).lean();
+    if (!result) throw new Error(bad_request);
     result.calendar = JSON.parse(result.calendar);
 
-    // 2) bentuk response data dan set status code = 200
+
+    // 2) mark weekend, weekdays + event, weekend + event
+    Object.keys(result.calendar).forEach((month) => {
+      Object.keys(result.calendar[month]).forEach((day) => {
+        const isWeekend = new Date(result.year, +month - 1, +day - 1).getDay() >= 5;
+        if (isWeekend) result.calendar[month][day].color = 'red';
+        if (!isWeekend && result.calendar[month][day].events.length > 0) result.calendar[month][day].color = 'orange';
+        if (isWeekend && result.calendar[month][day].events.length > 0) result.calendar[month][day].color = 'blue';
+      });
+    });
+
+    // 3) bentuk response data dan set status code = 200
     data = {
       value: result
     };
