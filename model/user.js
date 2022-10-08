@@ -82,14 +82,19 @@ const userSchema = new Schema({
   },
   wechat: {
     type: String,
+    trim: true,
+    minlength: 10,
+    maxlength: 14,
     trim: true
   },
   place_of_birth: {
     type: mongoose.Schema.Types.ObjectId,
+    required: [true, place_of_birth_required],
     ref: 'province'
   },
   city_of_residence: {
     type: mongoose.Schema.Types.ObjectId,
+    required: [true, place_of_birth_required],
     ref: 'city'
   },
   postal_address: {
