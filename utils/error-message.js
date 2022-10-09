@@ -1,6 +1,9 @@
 module.exports = {
   username_required: 'Username required',
-  user_unique: 'Username, email, phone number and wechat must be unique',
+  username_unique: 'Username already registered',
+  email_unique: 'Email already registered',
+  phone_unique: 'Phone already registered',
+  wechat_unique: 'Wechat already registered',
   username_max_30: 'Username max 30 characters',
   username_alphanumeric: 'Username is alphanumeric only',
   password_required: 'Password required',

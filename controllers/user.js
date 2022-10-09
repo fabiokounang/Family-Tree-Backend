@@ -12,7 +12,7 @@ const returnData = require("../helper-function/return-data");
 const processQueryParameter = require('../helper-function/process-query-parameter');
 const sendResponse = require("../helper-function/send-response");
 
-const { user_unique, user_not_found, bad_request, password_wrong, token_expired, password_match } = require("../utils/error-message");
+const { user_not_found, bad_request, password_wrong, token_expired, password_match, username_unique, email_unique, phone_unique, wechat_unique } = require("../utils/error-message");
 const sendEmail = require('../helper-function/send-email');
 const Point = require('../model/point');
 
@@ -21,11 +21,18 @@ exports.signupUser = async (req, res, next) => {
   try {
     // 1) validasi request body
     const errors = validationResult(req);
-    if (!errors.isEmpty()) throw new Error(bad_request);
+    if (!errors.isEmpty()) throw new Error(errors.array()[0].msg);
 
     // 2) query find user exist / tidak
-    const user = await User.findOne({ username: req.body.username, email: req.body.email, phone: req.body.phone, wechat: req.body.wechat });
-    if (user) throw new Error(user_unique);
+    const user = await User.findOne({
+      $or: [{username: req.body.username}, {email: req.body.email}, {phone: req.body.phone}, {wechat: req.body.wechat}] 
+    });
+    if (user) {
+      if (user.username === req.body.username) throw new Error(username_unique);
+      if (user.email === req.body.email) throw new Error(email_unique);
+      if (user.phone === req.body.phone) throw new Error(phone_unique);
+      if (req.body.wechat && user.wechat === req.body.wechat) throw new Error(wechat_unique);
+    }
 
     const province = await Province.findById(req.body.place_of_birth);
     const city = await City.findById(req.body.city_of_residence);
@@ -90,7 +97,7 @@ exports.signinUser = async (req, res, next) => {
   try {
 
     let errors = validationResult(req);    
-    if (!errors.isEmpty()) throw new Error(bad_request);
+    if (!errors.isEmpty()) throw new Error(errors.array()[0].msg);
 
     const user = await User.findOne({ username: req.body.username });
     if (!user) throw new Error(user_not_found);
@@ -136,7 +143,7 @@ exports.uploadImage = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   try {
     let errors = validationResult(req);    
-    if (!errors.isEmpty()) throw new Error(bad_request);
+    if (!errors.isEmpty()) throw new Error(errors.array()[0].msg);
 
     const user = await User.findById(req.user._id).select('image');
     if (!user) throw new Error(user_not_found);
@@ -159,7 +166,7 @@ exports.forgetPasswordUser = async (req, res, next) => {
   try {
 
     let errors = validationResult(req);    
-    if (!errors.isEmpty()) throw new Error(bad_request);
+    if (!errors.isEmpty()) throw new Error(errors.array()[0].msg);
 
     const email = req.body.email;
     const user = await User.findOne({ email });
@@ -193,7 +200,7 @@ exports.resetPassword = async (req, res, next) => {
   let { status, data, error, stack} = returnData();
   try {
     let errors = validationResult(req);    
-    if (!errors.isEmpty()) throw new Error(bad_request);
+    if (!errors.isEmpty()) throw new Error(errors.array()[0].msg);
 
     if (!req.params.token) throw new error(bad_request);
 
@@ -303,7 +310,7 @@ exports.updateUser = async (req, res, next) => {
 
     // 2) validasi request body
     let errors = validationResult(req);    
-    if (!errors.isEmpty()) throw new Error(bad_request);
+    if (!errors.isEmpty()) throw new Error(errors.array()[0].msg);
 
     // 3) query find admin by id
     let user = await User.findById(id).select(['username', 'role']);
@@ -349,7 +356,7 @@ exports.changePassword = async (req, res, next) => {
   try {
     // 2) validasi request body
     let errors = validationResult(req);    
-    if (!errors.isEmpty()) throw new Error(bad_request);
+    if (!errors.isEmpty()) throw new Error(errors.array()[0].msg);
 
     // 3) query find user by id
     let user = await User.findById(req.user._id).select(['username', 'password', 'role']);
@@ -382,7 +389,7 @@ exports.updatePasswordUser = async (req, res, next) => {
 
     // 2) validasi request body
     let errors = validationResult(req);    
-    if (!errors.isEmpty()) throw new Error(bad_request);
+    if (!errors.isEmpty()) throw new Error(errors.array()[0].msg);
 
     // 3) query find admin by id
     let user = await User.findById(id).select(['username', 'role', 'password']);

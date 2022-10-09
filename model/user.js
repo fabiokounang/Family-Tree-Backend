@@ -43,7 +43,6 @@ const userSchema = new Schema({
   },
   chinese_name: {
     type: String,
-    required: [true, chinese_name_required],
     maxlength: 200,
     trim: true
   },
@@ -82,9 +81,6 @@ const userSchema = new Schema({
   },
   wechat: {
     type: String,
-    trim: true,
-    minlength: 10,
-    maxlength: 14,
     trim: true
   },
   place_of_birth: {
