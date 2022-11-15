@@ -22,5 +22,6 @@ router.post('/self', checkAuthUser, userController.getOneUser);
 router.post('/update/:id', checkAuthUser, updateUserValidation, userController.updateUser);
 router.post('/admin/:id', checkAuthAdmin, userController.getOneUser);
 router.post('/', checkAuthAdmin, userController.getAllUser);
+router.post('/user', checkAuthUser, userController.getUserForTrees);
 
 module.exports = router;

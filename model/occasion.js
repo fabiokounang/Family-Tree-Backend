@@ -9,9 +9,17 @@ const occasionSchema = new Schema({
     unique: true,
     maxlength: 200
   },
-  type: {
+  // type: {
+  //   type: Number,
+  //   required: true // 1 add poin, 2 decrease poin
+  // },
+  scope: {
     type: Number,
-    required: true // 1 add poin, 2 decrease poin
+    required: true, // 1 local add point, 2 local decrease point, 3 nasional decrease point
+  },
+  province: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'province'
   },
   point: {
     type: Number,

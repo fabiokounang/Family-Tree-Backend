@@ -18,6 +18,7 @@ const provincecity = require('./routes/province-city');
 const broadcast = require('./routes/broadcast');
 const occasion = require('./routes/occasion');
 const point = require('./routes/point');
+const tree = require('./routes/tree');
 const log = require('./routes/log');
 
 app.enable('trust proxy');
@@ -28,10 +29,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(compression());
 
-app.use((req, res, next) => {
-  next();
-})
-
 app.use('/api/admin', admin);
 app.use('/api/theme', theme);
 app.use('/api/user', user);
@@ -41,6 +38,7 @@ app.use('/api/broadcast', broadcast);
 app.use('/api/log', log);
 app.use('/api/occasion', occasion);
 app.use('/api/point', point);
+app.use('/api/tree', tree);
 
 app.all('*', (req, res, next) => {
   res.send({

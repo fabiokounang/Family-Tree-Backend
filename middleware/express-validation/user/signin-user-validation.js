@@ -1,10 +1,10 @@
 const { body } = require('express-validator');
-const { username_required, username_max_50, password_required, password_8_16, password_alphanumeric } = require("../../../utils/error-message");
+const { email_required, password_required, password_8_16, password_alphanumeric, email_not_valid } = require("../../../utils/error-message");
 
 module.exports = [
-  body('username')
-    .notEmpty().withMessage(username_required)
-    .isLength({ max: 50 }).withMessage(username_max_50)
+  body('email')
+    .notEmpty().withMessage(email_required)
+    .isEmail().withMessage(email_not_valid)
     .trim(),
   body('password')
     .notEmpty().withMessage(password_required)

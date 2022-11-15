@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 
 const Occasion = require('../model/occasion');
+const Province = require('../model/province');
 
 const handleError = require("../helper-function/handle-error");
 const returnData = require("../helper-function/return-data");
@@ -132,6 +133,12 @@ exports.getAllOccasion = async (req, res, next) => {
     const results = await Occasion.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-__v']);
     const totalDocument = await Occasion.find(queryParams.objFilterSearch).countDocuments();
 
+    const objProv = {}
+    if (req.user.role == 2) objProv._id = {
+      $in: req.user.province
+    };
+    const province = await Province.find(objProv);
+    
     // 3) bentuk response data dan set status code = 200
     data = {
       page: queryParams.page,
@@ -139,7 +146,13 @@ exports.getAllOccasion = async (req, res, next) => {
       max: Math.ceil(totalDocument / queryParams.limit),
       pageSize: [10, 25, 50, 100, 200],
       total: totalDocument,
-      values: results
+      values: results,
+      province: province.map(val => {
+        return {
+          id: val._id,
+          name: val.province
+        }
+      })
     };
     status = 200;
   } catch (err) {
