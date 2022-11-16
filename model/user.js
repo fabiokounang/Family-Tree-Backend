@@ -127,7 +127,6 @@ const userSchema = new Schema({
     default: Date.now
   }
 });
-
 userSchema.pre('save', function (next) {
   if (!this.isModified('password')) return next();
   this.password = hashingPassword(this.password);

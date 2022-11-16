@@ -110,7 +110,10 @@ exports.signinUser = async (req, res, next) => {
     let errors = validationResult(req);    
     if (!errors.isEmpty()) throw new Error(errors.array()[0].msg);
 
-    const user = await User.findOne({ email: req.body.email });
+    const user = await User.findOne({ email: req.body.email }).populate({
+      path: 'place_of_birth'
+    });
+
     if (!user) {
       status = 404;
       throw new Error(user_not_found);
@@ -128,6 +131,10 @@ exports.signinUser = async (req, res, next) => {
     }, 0);
 
     const token = jwt.sign({ _id: user._id, email: user.email, fullname: user.fullname, status: user.status }, process.env.SECRET_KEY, { algorithm: 'HS512'}, { expiresIn: "7d" });
+    let addedZero = '00000';
+    let lengthPo = String(user.no_anggota).length;
+    let fixNoAnggota = addedZero.slice(0, addedZero.length - lengthPo) + user.no_anggota;
+
     let objUser = {
       _id: user._id,
       fullname: user.fullname,
@@ -136,7 +143,7 @@ exports.signinUser = async (req, res, next) => {
       status: user.status,
       token: token,
       point: totalPoint,
-      no_anggota: user.no_anggota,
+      no_anggota: user.place_of_birth.code + ' ' + fixNoAnggota,
       // address: user.address,
       // date_of_birth: user.date_of_birth,
       // first_name_latin: user.first_name_latin,
