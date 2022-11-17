@@ -326,12 +326,12 @@ exports.getOneUser = async (req, res, next) => {
     if (!id) throw new Error(bad_request);
 
     // 2) query data admin by id
-    const user = await User.findById(id).select(['-password', '-__v']).lean();
+    const user = await User.findById(id).select(['-password', '-__v']).populate({
+      path: 'place_of_birth'
+    }).populate({
+      path: 'city_of_residence'
+    });
     if (!user) throw new Error(user_not_found);
-    const province = await Province.findById(user.place_of_birth);
-    const city = await City.findById(user.city_of_residence);
-    user.place_of_birth = province.province;
-    user.city_of_residence = city.city;
     user.life_status = user.life_status == 1 ? 'alive' : 'dead';
     user.status = user.status == 1 ? 'active' : 'not active';
     user.gender = user.gender == 1 ? 'male' : 'female';
@@ -343,7 +343,7 @@ exports.getOneUser = async (req, res, next) => {
     user.point = total;
 
     // 3) bentuk response data dan set status code = 200
-    data = user;
+    data = user.toJSON();
     status = 200;
   } catch (err) {
     stack = err.message || err.stack || err;

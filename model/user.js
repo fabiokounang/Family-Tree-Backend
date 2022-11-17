@@ -126,7 +126,18 @@ const userSchema = new Schema({
     type: String,
     default: Date.now
   }
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
+
+userSchema.virtual('nomor_anggota').get(function () {
+  let addedZero = '00000';
+  let lengthNoAnggota = String(this.no_anggota).length;
+  let fixNoAnggota = addedZero.slice(0, addedZero.length - lengthNoAnggota) + this.no_anggota;
+  return fixNoAnggota;
+});
+
 userSchema.pre('save', function (next) {
   if (!this.isModified('password')) return next();
   this.password = hashingPassword(this.password);
