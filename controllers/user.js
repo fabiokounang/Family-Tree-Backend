@@ -44,8 +44,8 @@ exports.signupUser = async (req, res, next) => {
     
     let inc = null
     if (!lastUser) inc = 1;
-    else inc = +lastUser.no_anggota.slice(2) + 1;
-  
+    else inc = +lastUser.no_anggota + 1;
+
     // 3) create new user
     const newUser = new User({
       no_anggota: inc,
