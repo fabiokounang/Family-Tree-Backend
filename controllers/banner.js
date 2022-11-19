@@ -2,7 +2,7 @@ const handleError = require("../helper-function/handle-error");
 const returnData = require("../helper-function/return-data");
 const processQueryParameter = require('../helper-function/process-query-parameter');
 const sendResponse = require("../helper-function/send-response");
-const Banner = require("../model/Banner");
+const Banner = require("../model/banner");
 const { banner_not_found } = require("../utils/error-message");
 const { createLog } = require("./log");
 
