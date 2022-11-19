@@ -6,8 +6,6 @@ const Banner = require("../model/banner");
 const { banner_not_found } = require("../utils/error-message");
 const { createLog } = require("./log");
 
-// Banner.deleteMany().then(() => {})
-
 exports.createBanner = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   
@@ -90,6 +88,25 @@ exports.getAllBanner = async (req, res, next) => {
       max: Math.ceil(totalDocument / queryParams.limit),
       pageSize: [10, 25, 50, 100, 200],
       total: totalDocument,
+      values: results
+    };
+    status = 200;
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
+exports.getAllBannerUser = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+  
+  try {
+    const results = await Banner.find({ status: 1 }).sort('-created_at');
+ 
+    // 3) bentuk response data dan set status code = 200
+    data = {
       values: results
     };
     status = 200;
