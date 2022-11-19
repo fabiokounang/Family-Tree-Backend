@@ -121,6 +121,27 @@ exports.getAllProvince = async (req, res, next) => {
   }
 }
 
+exports.getAllProvinceUser = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+
+  try {
+    // 1) proses query parameter pagination etc
+    // 2) query data dan query count total
+    const results = await Province.find();
+
+    // 3) bentuk response data dan set status code = 200
+    data = {
+      values: results
+    };
+    status = 200;
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
 exports.getAllCityByProvince = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
 
@@ -146,6 +167,26 @@ exports.getAllCityByProvince = async (req, res, next) => {
 }
 
 exports.getAllCity = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+
+  try {    
+    // 1) query city
+    const results = await City.find();
+
+    // 2) bentuk response data dan set status code = 200
+    data = {
+      values: results
+    };
+    status = 200;
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
+exports.getAllCityUser = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
 
   try {    

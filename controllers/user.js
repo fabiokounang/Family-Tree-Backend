@@ -130,7 +130,7 @@ exports.signinUser = async (req, res, next) => {
       return currentValue + value.point;
     }, 0);
 
-    const token = jwt.sign({ _id: user._id, email: user.email, fullname: user.fullname, status: user.status }, process.env.SECRET_KEY, { algorithm: 'HS512'}, { expiresIn: "7d" });
+    const token = jwt.sign({ _id: user._id, fullname: user.fullname, status: user.status }, process.env.SECRET_KEY, { algorithm: 'HS512'}, { expiresIn: "7d" });
     let addedZero = '00000';
     let lengthPo = String(user.no_anggota).length;
     let fixNoAnggota = addedZero.slice(0, addedZero.length - lengthPo) + user.no_anggota;
@@ -138,7 +138,6 @@ exports.signinUser = async (req, res, next) => {
     let objUser = {
       _id: user._id,
       fullname: user.fullname,
-      email: user.email,
       gender: user.gender,
       status: user.status,
       token: token,

@@ -12,6 +12,8 @@ const port = process.env.PORT || 3000;
 
 const admin = require('./routes/admin');
 const user = require('./routes/user');
+const bulletin = require('./routes/bulletin');
+const banner = require('./routes/banner');
 const theme = require('./routes/theme');
 const calendar = require('./routes/calendar');
 const provincecity = require('./routes/province-city');
@@ -31,6 +33,8 @@ app.use(compression());
 
 app.use('/api/admin', admin);
 app.use('/api/theme', theme);
+app.use('/api/bulletin', bulletin);
+app.use('/api/banner', banner);
 app.use('/api/user', user);
 app.use('/api/calendar', calendar);
 app.use('/api/province_city', provincecity);
