@@ -1,17 +1,24 @@
+const cloudinary = require('cloudinary').v2;
+const mongoose = require('mongoose');
+
+const Banner = require("../model/banner");
+
 const handleError = require("../helper-function/handle-error");
 const returnData = require("../helper-function/return-data");
 const processQueryParameter = require('../helper-function/process-query-parameter');
+
 const sendResponse = require("../helper-function/send-response");
-const Banner = require("../model/banner");
-const { banner_not_found } = require("../utils/error-message");
+
 const { createLog } = require("./log");
+const { banner_not_found, vendor_error } = require("../utils/error-message");
 
 exports.createBanner = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   
   try {
     const newBanner = new Banner({
-      image: req.file.filename,
+      image: req.resultFile,
+      cloudinary: req.public_id,
       status: req.body.status || 1
     });
 
@@ -38,10 +45,8 @@ exports.updateBanner = async (req, res, next) => {
     const banner = await Banner.findById(req.params.id);
     if (!banner) throw new Error(banner_not_found);
 
-    banner.title = req.body.title || banner.title;
-    banner.subtitle = req.body.subtitle || banner.subtitle;
-    banner.image = req.file.filename || banner.image;
-    banner.description = req.body.description || banner.description;
+    banner.image = req.resultFile || banner.image;
+    banner.cloudinary = req.public_id || banner.cloudinary;
     banner.status = req.body.status || banner.status;
 
     await banner.save();
@@ -56,16 +61,28 @@ exports.updateBanner = async (req, res, next) => {
     sendResponse(res, status, data, error, stack);
   }
 }
+
 exports.deleteBanner = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
   try {
-    await Banner.deleteOne({ _id: req.params.id});
+    const id = req.params.id;
+    const banner = await Banner.findById(id);
+    if (banner) {
+      const cloudinaryDelete = await cloudinary.api.delete_resources([banner.cloudinary]);
+      if (cloudinaryDelete.deleted_counts.original <= 0) throw new Error(vendor_error);
+      await Banner.deleteOne({ _id: req.params.id }).session(session);
+    }
     status = 204;
+    await session.commitTransaction();
   } catch (err) {
+    await session.abortTransaction();
     stack = err.message || err.stack || err;
     error = handleError(err);
   } finally {
+    await session.endSession();
     sendResponse(res, status, data, error, stack);
   }
 }

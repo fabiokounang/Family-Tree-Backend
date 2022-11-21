@@ -20,8 +20,6 @@ const Calendar = require('../model/calendar');
 
 exports.signupUser = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
-  const session = await mongoose.startSession();
-  session.startTransaction();
 
   try {
     // 1) validasi request body
@@ -92,13 +90,10 @@ exports.signupUser = async (req, res, next) => {
       no_anggota: result.no_anggota
     }
     status = 201;
-    session.commitTransaction()
   } catch (err) {
-    session.abortTransaction();
     stack = err.message || err.stack || err;
     error = handleError(err);
   } finally {
-    session.endSession();
     sendResponse(res, status, data, error, stack);
   }
 }

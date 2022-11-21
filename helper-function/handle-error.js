@@ -1,10 +1,15 @@
-const { bad_request, unknown_error, auth } = require("../utils/error-message");
+const { bad_request, unknown_error, auth, database_error } = require("../utils/error-message");
 
 module.exports = (error) => {
   let fixError = '';
 
   if (error.name === 'Error') {
     fixError = error.message;
+    return fixError;
+  }
+
+  if (error.name === 'MongoServerError') {
+    fixError = database_error;
     return fixError;
   }
 

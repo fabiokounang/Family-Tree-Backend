@@ -24,7 +24,6 @@ const tree = require('./routes/tree');
 const log = require('./routes/log');
 
 app.enable('trust proxy');
-app.use(express.static('public'))
 app.use(cors({ credentials: true, origin: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -44,7 +43,7 @@ app.use('/api/occasion', occasion);
 app.use('/api/point', point);
 app.use('/api/tree', tree);
 
-app.all('*', (req, res, next) => {
+app.all('*', (req, res) => {
   res.send({
     status: false,
     data: [],

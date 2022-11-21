@@ -1,4 +1,10 @@
 module.exports = {
+  auth: 'Not Authenticated',
+  unknown_error: 'Unknown error',
+  bad_request: 'Bad request',
+  vendor_error: 'Something went wrong with provider, please try again',
+  database_error: 'Database error, please contact IT support',
+
   fullname_required: 'Nama lengkap wajib diisi',
 
   nik_required: 'NIK wajib diisi',
@@ -37,8 +43,7 @@ module.exports = {
   
   admin_not_found: 'Admin tidak ditemukan',
   user_not_found: 'User tidak ditemukan',
-  unknown_error: 'Unknown error',
-  bad_request: 'Bad request',
+
   admin_not_active: 'Admin tidak aktif',
   user_not_active: 'User tidak aktif',
   province_not_found: 'Provinsi tidak ditemukan',
@@ -48,7 +53,6 @@ module.exports = {
   occasion_type_required: 'Occasion type wajib diisi',
   point_required: 'Point wajib diisi',
   scope_required: 'Occasion scope wajib diisi',
-  auth: 'Not Authenticated',
 
   title_required: 'Judul wajib diisi',
   subtitle_required: 'Sub judul wajib diisi',

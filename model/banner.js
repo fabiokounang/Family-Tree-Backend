@@ -7,6 +7,10 @@ const bannerSchema = new Schema({
     type: String,
     required: [true, image_required]
   },
+  cloudinary: {
+    type: String,
+    required: [true, image_required]
+  },
   status: {
     type: Number,
     required: [true, status_required],
