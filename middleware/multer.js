@@ -25,7 +25,7 @@ exports.processImage = async (req, res, next) => {
         use_filename: true,
         unique_filename: false,
         overwrite: true,
-        folder: 'images'
+        folder: process.env.NODE_ENV === 'production' ? 'imagesprod' : 'images'
       };
 
       // Upload the image
