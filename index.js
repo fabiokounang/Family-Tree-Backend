@@ -100,34 +100,3 @@ process.on('SIGTERM', () => {
     process.exit();
   });
 });
-
-// Tabel Parent Family Tree
-// - id
-// - name
-// - gender
-// - role
-
-// Tabel Family Tree
-// - id
-// - name
-// - gender
-// - role
-// - parentIdSuami
-// - parentIdIstri
-
-
-// 1. fabio
-//    pria
-//    suami
-
-// 2. priska
-//    wanita
-//    istri
-
-// 3. reno
-//    pria
-//    anak pertama dari fabio dan priska
-
-// 4. chang
-//    wanita
-//    anak kedua dari fabio dan priska]

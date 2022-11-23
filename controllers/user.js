@@ -139,7 +139,7 @@ exports.signinUser = async (req, res, next) => {
       token: token,
       point: totalPoint,
       no_anggota: user.place_of_birth.code + ' ' + fixNoAnggota,
-      chinese_name: user.chinese_name,
+      chinese_name: user.chinese_name || '',
       // address: user.address,
       // date_of_birth: user.date_of_birth,
       // first_name_latin: user.first_name_latin,
