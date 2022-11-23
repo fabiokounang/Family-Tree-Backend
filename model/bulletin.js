@@ -20,6 +20,10 @@ const bulletinSchema = new Schema({
     type: String,
     required: [true, image_required]
   },
+  cloudinary: {
+    type: String,
+    required: [true, image_required]
+  },
   description: {
     type: String,
     required: [true, description_required],
@@ -34,6 +38,9 @@ const bulletinSchema = new Schema({
     type: String,
     default: Date.now
   }
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 const Bulletin = mongoose.model('bulletin', bulletinSchema);

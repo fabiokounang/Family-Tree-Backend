@@ -64,26 +64,45 @@ exports.updateBanner = async (req, res, next) => {
 
 exports.deleteBanner = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
-  const session = await mongoose.startSession();
-  session.startTransaction();
 
-  try {
-    const id = req.params.id;
-    const banner = await Banner.findById(id);
-    if (banner) {
-      const cloudinaryDelete = await cloudinary.api.delete_resources([banner.cloudinary]);
-      if (cloudinaryDelete.deleted_counts.original <= 0) throw new Error(vendor_error);
-      await Banner.deleteOne({ _id: req.params.id }).session(session);
+  if (process.env.NODE_ENV === 'production') {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+  
+    try {
+      const id = req.params.id;
+      const banner = await Banner.findById(id);
+      if (banner) {
+        const cloudinaryDelete = await cloudinary.api.delete_resources([banner.cloudinary]);
+        if (cloudinaryDelete.deleted_counts.original <= 0) throw new Error(vendor_error);
+        await Banner.deleteOne({ _id: req.params.id }).session(session);
+      }
+      status = 204;
+      await session.commitTransaction();
+    } catch (err) {
+      await session.abortTransaction();
+      stack = err.message || err.stack || err;
+      error = handleError(err);
+    } finally {
+      await session.endSession();
+      sendResponse(res, status, data, error, stack);
     }
-    status = 204;
-    await session.commitTransaction();
-  } catch (err) {
-    await session.abortTransaction();
-    stack = err.message || err.stack || err;
-    error = handleError(err);
-  } finally {
-    await session.endSession();
-    sendResponse(res, status, data, error, stack);
+  } else {
+    try {
+      const id = req.params.id;
+      const banner = await Banner.findById(id);
+      if (banner) {
+        const cloudinaryDelete = await cloudinary.api.delete_resources([banner.cloudinary]);
+        if (cloudinaryDelete.deleted_counts.original <= 0) throw new Error(vendor_error);
+        await Banner.deleteOne({ _id: req.params.id })
+      }
+      status = 204;
+    } catch (err) {
+      stack = err.message || err.stack || err;
+      error = handleError(err);
+    } finally {
+      sendResponse(res, status, data, error, stack);
+    }
   }
 }
 

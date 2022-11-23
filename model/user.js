@@ -46,11 +46,11 @@ const userSchema = new Schema({
   //   maxlength: 200,
   //   trim: true
   // },
-  // chinese_name: {
-  //   type: String,
-  //   maxlength: 200,
-  //   trim: true
-  // },
+  chinese_name: {
+    type: String,
+    maxlength: 200,
+    trim: true
+  },
   // life_status: {
   //   type: Number,
   //   default: 1 // 1 alive, 2 dead

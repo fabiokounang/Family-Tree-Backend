@@ -1,24 +1,32 @@
+const cloudinary = require('cloudinary').v2;
+const { validationResult } = require("express-validator");
+
+const Bulletin = require("../model/bulletin");
+
 const handleError = require("../helper-function/handle-error");
 const returnData = require("../helper-function/return-data");
 const processQueryParameter = require('../helper-function/process-query-parameter');
 const sendResponse = require("../helper-function/send-response");
-const Bulletin = require("../model/bulletin");
-const { bulletin_unique, bulletin_not_found } = require("../utils/error-message");
-const { createLog } = require("./log");
 
-// Bulletin.deleteMany().then(() => {})
+const { bulletin_unique, bulletin_not_found, bad_request } = require("../utils/error-message");
+
+const { createLog } = require("./log");
 
 exports.createBulletin = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) throw new Error(bad_request);
+
     const bulletin = await Bulletin.findOne({ title: req.body.title });
     if (bulletin) throw new Error(bulletin_unique);
 
     const newBulletin = new Bulletin({
       title: req.body.title,
       subtitle: req.body.subtitle,
-      image: req.file.filename,
+      image: req.resultFile,
+      cloudinary: req.public_id,
       description: req.body.description,
       status: req.body.status || 1
     });
@@ -49,7 +57,8 @@ exports.updateBulletin = async (req, res, next) => {
 
     bulletin.title = req.body.title || bulletin.title;
     bulletin.subtitle = req.body.subtitle || bulletin.subtitle;
-    bulletin.image = req.file.filename || bulletin.image;
+    bulletin.image = req.resultFile || bulletin.image;
+    bulletin.cloudinary = req.public_id || bulletin.cloudinary;
     bulletin.description = req.body.description || bulletin.description;
     bulletin.status = req.body.status || bulletin.status;
 
@@ -68,16 +77,46 @@ exports.updateBulletin = async (req, res, next) => {
 
 exports.deleteBulletin = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
-
-  try {
-    await Bulletin.deleteOne({ _id: req.params.id});
-    status = 204;
-  } catch (err) {
-    stack = err.message || err.stack || err;
-    error = handleError(err);
-  } finally {
-    sendResponse(res, status, data, error, stack);
+  if (process.env.NODE_ENV === 'production') {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      const id = req.params.id;
+      const bulletin = await Bulletin.findById(id);
+      if (bulletin) {
+        const cloudinaryDelete = await cloudinary.api.delete_resources([bulletin.cloudinary]);
+        if (cloudinaryDelete.deleted_counts.original <= 0) throw new Error(vendor_error);
+        await bulletin.deleteOne({ _id: req.params.id }).session(session);
+      }
+      status = 204;
+      await session.commitTransaction();
+    } catch (err) {
+      await session.abortTransaction();
+      stack = err.message || err.stack || err;
+      error = handleError(err);
+    } finally {
+      await session.endSession();
+      sendResponse(res, status, data, error, stack);
+    }
+  } else {
+    try {
+      const id = req.params.id;
+      const bulletin = await Bulletin.findById(id);
+      if (bulletin) {
+        const cloudinaryDelete = await cloudinary.api.delete_resources([bulletin.cloudinary]);
+        if (cloudinaryDelete.deleted_counts.original <= 0) throw new Error(vendor_error);
+        await bulletin.deleteOne({ _id: req.params.id });
+      }
+      status = 204;
+    } catch (err) {
+      console.log(err)
+      stack = err.message || err.stack || err;
+      error = handleError(err);
+    } finally {
+      sendResponse(res, status, data, error, stack);
+    }
   }
+
 }
 
 exports.getAllBulletin = async (req, res, next) => {
@@ -100,6 +139,51 @@ exports.getAllBulletin = async (req, res, next) => {
       total: totalDocument,
       values: results
     };
+    status = 200;
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
+exports.getAllBulletinUser = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+  
+  try {
+    const queryParams = processQueryParameter(req, 'created_at', ['title', 'subtitle']);
+
+    // 2) query data dan query count total
+    const results = await Bulletin.find({ status: 1, ...queryParams.objFilterSearch }).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-password', '-__v']);
+    const totalDocument = await Bulletin.find(queryParams.objFilterSearch).countDocuments();
+ 
+    // 3) bentuk response data dan set status code = 200
+    data = {
+      page: queryParams.page,
+      limit: queryParams.limit,
+      max: Math.ceil(totalDocument / queryParams.limit),
+      pageSize: [10, 25, 50, 100, 200],
+      total: totalDocument,
+      values: results
+    };
+    status = 200;
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
+exports.getBulletin = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+  
+  try {
+    const bulletin = await Bulletin.findById(req.params.id).lean();
+    if (!bulletin) throw new Error(bad_request);
+
+    data = bulletin;
     status = 200;
   } catch (err) {
     stack = err.message || err.stack || err;

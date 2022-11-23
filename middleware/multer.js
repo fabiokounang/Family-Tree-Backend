@@ -19,6 +19,11 @@ exports.processImage = async (req, res, next) => {
   upload(req, res, async (err) => {
     try {
       if (err) throw new Error(err.message);
+      if (req.body.image && req.body.image.startsWith('https')) {
+        next();
+        return;
+      }
+
       if (!req.file) throw new Error(image_required);
       if (!['image/png', 'image/jpg', 'image/jpeg'].includes(req.file.mimetype)) throw new Error(image_not_valid);
       const options = {

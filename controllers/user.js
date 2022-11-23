@@ -133,16 +133,17 @@ exports.signinUser = async (req, res, next) => {
     let objUser = {
       _id: user._id,
       fullname: user.fullname,
+      email: user.email,
       gender: user.gender,
       status: user.status,
       token: token,
       point: totalPoint,
       no_anggota: user.place_of_birth.code + ' ' + fixNoAnggota,
+      chinese_name: user.chinese_name,
       // address: user.address,
       // date_of_birth: user.date_of_birth,
       // first_name_latin: user.first_name_latin,
       // last_name_latin: user.last_name_latin,
-      // chinese_name: user.chinese_name,
       // theme: user.theme || '',
       // remark: user.remark,
       // image: user.image
@@ -355,38 +356,23 @@ exports.updateUser = async (req, res, next) => {
     if (!id) throw new Error(bad_request);
 
     // 2) validasi request body
-    let errors = validationResult(req);    
+    let errors = validationResult(req);
     if (!errors.isEmpty()) throw new Error(errors.array()[0].msg);
 
-    // 3) query find admin by id
-    let user = await User.findById(id).select(['username', 'role']);
+    // 3) query find user by id
+    let user = await User.findById(id).select(['fullname', 'email', 'chinese_name', 'place_of_birth', 'city_of_residence', 'gender']);
     if (!user) throw(user_not_found);
 
-    let beforeUser = JSON.stringify(user);
 
-    //4) query update data admin
-    user.username = req.body.username || user.username;
+    //4) query update data user
     user.fullname = req.body.fullname || user.fullname;
-    user.address = req.body.address || user.address;
-    user.date_of_birth = req.body.date_of_birth || user.date_of_birth;
+    user.email = req.body.email || user.email;
+    user.chinese_name = req.body.chinese_name || user.chinese_name;
+    user.place_of_birth = req.body.place_of_birth || user.place_of_birth;
+    user.city_of_residence = req.body.city_of_residence || user.city_of_residence;
     user.gender = req.body.gender || user.gender;
     await user.save({validateBeforeSave: true});
 
-    // beforeAdmin = JSON.parse(beforeAdmin);
-    // let beforeData = {
-    //   username: beforeAdmin.username,
-    //   toko: beforeAdmin.toko,
-    //   role: beforeAdmin.role
-    // }
-
-    // let afterData = {
-    //   username: admin.username,
-    //   toko: req.toko,
-    //   role: admin.role
-    // }
-
-    // let objLog = generateDataLog(req.userData.username, 'log.update_admin', req.userData.role, beforeData, afterData);
-    // await log.createLog(objLog);
     data = user.toObject();
     status = 200;
   } catch (err) {
