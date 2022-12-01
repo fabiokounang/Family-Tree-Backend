@@ -1,17 +1,10 @@
 const multer = require('multer');
 const path = require('path');
 const os = require('os');
-console.log(os.platform());
-console.log(path.join(__dirname));
-console.log(path.join(__dirname, '..', 'public'));
+
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
-    let p = '';
-    if (os.platform().includes('linux')) {
-      p = path.join(__dirname, '..', 'public');
-    } else {
-      p = path.join(__dirname, '..', 'public');
-    }
+    let p = path.join(__dirname, '..', 'public');
     callback(null, p);
   },
   filename: (req, file, callback) => {
