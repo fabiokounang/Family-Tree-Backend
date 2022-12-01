@@ -1,10 +1,11 @@
 const multer = require('multer');
 const path = require('path');
 const os = require('os');
+const pathDir = require('../utils/path-dir');
 
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
-    let p = path.join(__dirname, '..', 'public');
+    let p = pathDir('');
     callback(null, p);
   },
   filename: (req, file, callback) => {

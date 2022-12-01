@@ -10,12 +10,13 @@ const returnData = require("../helper-function/return-data");
 const sendResponse = require("../helper-function/send-response");
 
 const { calendar_not_found, event_name_required, bad_request, lunar_required } = require("../utils/error-message");
+const pathDir = require('../utils/path-dir');
 
 const { createLog } = require("./log");
 
 exports.createCalendar = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
-  const pathFile = path.join(__dirname, '..', 'public', req.fileUpload.filename);
+  const pathFile = pathDir(req.fileUpload.filename);
 
   try {
     // 1) create calendar
