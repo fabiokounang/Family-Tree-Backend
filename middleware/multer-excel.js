@@ -27,7 +27,7 @@ module.exports = (req, res, next) => {
       res.send({
         status: false,
         data: [],
-        error: 'Error upload file'
+        error: err.message
       });
     } else {
       req.fileUpload = req.files[0];
