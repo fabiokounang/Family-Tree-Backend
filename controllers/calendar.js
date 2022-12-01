@@ -15,11 +15,11 @@ const { createLog } = require("./log");
 
 exports.createCalendar = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
-  const path = path.join(__dirname, '..', 'public', req.fileUpload.filename);
+  const pathFile = path.join(__dirname, '..', 'public', req.fileUpload.filename);
 
   try {
     // 1) create calendar
-    const rows = await readXlsxFile(path);
+    const rows = await readXlsxFile(pathFile);
     const name = rows[0][1];
     const year = rows[1][1];
     rows.shift();
@@ -58,7 +58,7 @@ exports.createCalendar = async (req, res, next) => {
     stack = err.message || err.stack || err;
     error = handleError(err);
   } finally {
-    fs.unlink(path);
+    fs.unlink(pathFile);
     sendResponse(res, status, data, error, stack);
   }
 }
