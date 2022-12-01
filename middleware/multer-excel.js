@@ -1,9 +1,11 @@
 const multer = require('multer');
 const path = require('path');
-console.log(path.join(__dirname));
+const os = require('os');
+console.log(os.platform());
+console.log(path.join(__dirname, 'public'));
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
-    callback(null, path.join(__dirname, '..', 'public'));
+    callback(null, path.join(__dirname, 'public'));
   },
   filename: (req, file, callback) => {
     callback(null, Date.now() + path.extname(file.originalname));
