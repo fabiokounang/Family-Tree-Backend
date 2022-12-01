@@ -224,9 +224,6 @@ exports.getOneCalendar = async (req, res, next) => {
     const result = await Calendar.findOne({ status: 1 }).lean();
     if (!result) {
       status = 200;
-      data = {
-        value: []
-      }
       return;
     }
     result.calendar = JSON.parse(result.calendar);
