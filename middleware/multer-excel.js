@@ -4,7 +4,7 @@ const os = require('os');
 
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
-    let p = path.join(__dirname, '..', 'public');
+    let p = path.join(__dirname, '..', 'public-excel');
     callback(null, p);
   },
   filename: (req, file, callback) => {
