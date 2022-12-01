@@ -1,40 +1,55 @@
+const path = require('path');
+const readXlsxFile = require('read-excel-file/node');
+const fs = require('fs').promises;
+
+const Calendar = require("../model/calendar");
+
 const getDaysInMonth = require("../helper-function/get-days-in-month");
 const handleError = require("../helper-function/handle-error");
 const returnData = require("../helper-function/return-data");
 const sendResponse = require("../helper-function/send-response");
-const Calendar = require("../model/calendar");
 
-const { calendar_not_found, event_name_required, bad_request } = require("../utils/error-message");
+const { calendar_not_found, event_name_required, bad_request, lunar_required } = require("../utils/error-message");
+
 const { createLog } = require("./log");
 
 exports.createCalendar = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
+  const path = path.join(__dirname, '..', 'public', req.fileUpload.filename);
+
   try {
     // 1) create calendar
-    const date = new Date();
-    const currentYear = date.getFullYear();
-
+    const rows = await readXlsxFile(path);
+    const name = rows[0][1];
+    const year = rows[1][1];
+    rows.shift();
+    rows.shift();
+    
     let arrCalendar = {};
-    for (let i = 1; i <= 12; i++) {
-      const daysInCurrentMonth = getDaysInMonth(currentYear, i);
-      Array.from(Array(daysInCurrentMonth + 1).keys()).slice(1).forEach((day) => {
-        arrCalendar[i] = Object.assign({}, arrCalendar[i], {
-          [day]: {
+    rows.forEach((row) => {
+      if (row[0] && row[0] != 'Date') {
+        if (!arrCalendar[row[1]]) arrCalendar[row[1]] = {};
+        if (!row[2]) throw new Error(lunar_required);
+        arrCalendar[row[1]] = Object.assign({}, arrCalendar[row[1]], {
+          [row[0]]: {
+            lunar: row[2],
             events: [],
-            color: ''
+            color: '',
+            moon: ''
           }
-        })
-      });
-    }
+        });
+      }
+    });
 
     // 2) query create calendar exist / tidak
     const calendar = new Calendar({
-      name: req.body.name,
+      name: name,
+      year: year,
       calendar: JSON.stringify(arrCalendar)
     });
 
     await calendar.save();
-
+    
     // 4) bentuk response data dan set status code = 201
     status = 201;
 
@@ -43,6 +58,7 @@ exports.createCalendar = async (req, res, next) => {
     stack = err.message || err.stack || err;
     error = handleError(err);
   } finally {
+    fs.unlink(path);
     sendResponse(res, status, data, error, stack);
   }
 }
@@ -61,12 +77,20 @@ exports.updateCalendar = async (req, res, next) => {
     calendar.calendar = JSON.parse(calendar.calendar);
 
     // 4) validasi name event
-    const isNotValid = req.body.events.find(val => !val.name);
-    if (isNotValid) throw new Error(event_name_required);
+    req.body.events = req.body.events.filter(val => val.name);
+
+    if (req.body.moon) { // delete
+      // 1 purnama, 2 mati
+      Object.keys(calendar.calendar[req.body.month]).forEach((day) => {
+        if (calendar.calendar[req.body.month][day].moon == req.body.moon) calendar.calendar[req.body.month][day].moon = '';
+      });
+    }
 
     // 5) set event ke tanggal calendar
     calendar.calendar[req.body.month][req.body.day] = Object.assign({}, calendar.calendar[req.body.month][req.body.day], {
-      events: req.body.events
+      events: req.body.events && req.body.events.length > 0 ? req.body.events : calendar.calendar[req.body.month][req.body.day].events,
+      lunar: req.body.lunar || calendar.calendar[req.body.month][req.body.day].lunar,
+      moon: req.body.moon || calendar.calendar[req.body.month][req.body.day].moon
     });
 
     // 6) update calendar by id
@@ -115,7 +139,7 @@ exports.getAllCalendar = async (req, res, next) => {
 
   try {
     // 1) query data dan query count total
-    const results = await Calendar.find();
+    const results = await Calendar.find().sort({created_at: -1});
 
     // 3) bentuk response data dan set status code = 200
     let r = [];
@@ -217,6 +241,7 @@ exports.getOneCalendar = async (req, res, next) => {
     };
     status = 200;
   } catch (err) {
+    console.log(err)
     stack = err.message || err.stack || err;
     error = handleError(err);
   } finally {

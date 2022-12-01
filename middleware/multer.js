@@ -1,13 +1,16 @@
 const multer = require('multer');
 const path = require('path');
-const handleError = require('../helper-function/handle-error');
-const sendResponse = require('../helper-function/send-response');
-const { image_not_valid, image_required } = require('../utils/error-message');
-const maxSize = 2 * 1024 * 1024;
+const sharp = require('sharp');
 const Datauri = require('datauri/parser');
 const dUri = new Datauri();
 const cloudinary = require('cloudinary').v2;
 cloudinary.config({ secure: true });
+
+const handleError = require('../helper-function/handle-error');
+const sendResponse = require('../helper-function/send-response');
+
+const { image_not_valid, image_required } = require('../utils/error-message');
+const maxSize = 2 * 1024 * 1024;
 
 const storage = multer.memoryStorage();
 
@@ -41,6 +44,7 @@ exports.processImage = async (req, res, next) => {
       req.resultFile = result.secure_url;
       next();
     } catch (error) {
+      console.log(error)
       const errorData = handleError(error);
       sendResponse(res, 500, [], errorData);
     }

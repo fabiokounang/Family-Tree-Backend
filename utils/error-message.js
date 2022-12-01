@@ -44,6 +44,8 @@ module.exports = {
   admin_not_found: 'Admin tidak ditemukan',
   user_not_found: 'User tidak ditemukan',
 
+  lunar_required: 'Chinese lunar day name required',
+
   admin_not_active: 'Admin tidak aktif',
   user_not_active: 'User tidak aktif',
   province_not_found: 'Provinsi tidak ditemukan',
@@ -97,7 +99,7 @@ module.exports = {
   // day_required: 'Day wajib diisi',
   // day_numeric: 'Day must be numeric',
   // events_required: 'Event wajib diisi',
-  // event_name_required: 'Event name wajib diisi',
+  event_name_required: 'Event name wajib diisi',
   // title_required: 'Title broadcast wajib diisi',
   // description_required: 'Description broadcast wajib diisi',
   // title_max_200: 'Title max 200 characters',
