@@ -222,7 +222,13 @@ exports.getOneCalendar = async (req, res, next) => {
   try {
     // 1) query data calendar aktif
     const result = await Calendar.findOne({ status: 1 }).lean();
-    if (!result) throw new Error(bad_request);
+    if (!result) {
+      status = 200;
+      data = {
+        value: []
+      }
+      return;
+    }
     result.calendar = JSON.parse(result.calendar);
 
 
@@ -242,7 +248,6 @@ exports.getOneCalendar = async (req, res, next) => {
     };
     status = 200;
   } catch (err) {
-    console.log(err)
     stack = err.message || err.stack || err;
     error = handleError(err);
   } finally {
