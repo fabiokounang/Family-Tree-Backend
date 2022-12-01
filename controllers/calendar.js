@@ -15,7 +15,7 @@ const { createLog } = require("./log");
 
 exports.createCalendar = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
-  const pathFile = path.join(__dirname, req.fileUpload.filename);
+  const pathFile = path.join(__dirname, '..', 'public', req.fileUpload.filename);
 
   try {
     // 1) create calendar
