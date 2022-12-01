@@ -8,7 +8,7 @@ const storage = multer.diskStorage({
   destination: (req, file, callback) => {
     let p = '';
     if (os.platform().includes('linux')) {
-      p = path.join(__dirname, 'public');
+      p = path.join(__dirname, '..', 'public');
     } else {
       p = path.join(__dirname, '..', 'public');
     }
