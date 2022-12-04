@@ -400,7 +400,6 @@ exports.changePassword = async (req, res, next) => {
 
     //4) query update password user
     user.password = req.body.new_password || user.password;
-
     await user.save({validateBeforeSave: true});
 
     status = 204;
@@ -424,13 +423,12 @@ exports.updatePasswordUser = async (req, res, next) => {
     if (!errors.isEmpty()) throw new Error(errors.array()[0].msg);
 
     // 3) query find admin by id
-    let user = await User.findById(id).select(['username', 'role', 'password']);
+    let user = await User.findById(id).select(['fullname', 'email', 'role', 'password']);
     if (!user) throw(user_not_found);
-
+    sendEmail(user.email, req.body.password);
     user.password = req.body.password || user.password;
     await user.save({validateBeforeSave: true});
 
-    data = user.toObject();
     status = 200;
   } catch (err) {
     stack = err.message || err.stack || err;
