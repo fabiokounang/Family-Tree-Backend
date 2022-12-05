@@ -28,10 +28,10 @@ module.exports = {
   confirmation_password_required: 'Confirmation password wajib diisi',
   
   status_required: 'Status wajib diisi',
-  status_not_valid: 'Status not valid',
+  status_not_valid: 'Status tidak valid',
   
   role_required: 'Role wajib diisi',
-  role_not_valid: 'Role not valid',
+  role_not_valid: 'Role tidak valid',
   
   theme_required: 'Theme name wajib diisi',
   theme_not_found: 'Theme tidak ditemukan',
@@ -44,14 +44,16 @@ module.exports = {
   admin_not_found: 'Admin tidak ditemukan',
   user_not_found: 'User tidak ditemukan',
 
-  lunar_required: 'Chinese lunar day name required',
+  lunar_required: 'Nama lunar kalender wajib diisi',
+  year_required: 'Tahun wajib diisi',
+  year_numeric: 'Tahun wajib angka',
 
   admin_not_active: 'Admin tidak aktif',
   user_not_active: 'User tidak aktif',
   province_not_found: 'Provinsi tidak ditemukan',
-  province_unique: 'Provinsi unique',
+  province_unique: 'Provinsi sudah terdaftar',
   province_required: 'Provinsi wajib diisi',
-  city_unique: 'City unique',
+  city_unique: 'Kota sudah terdaftar',
   occasion_type_required: 'Occasion type wajib diisi',
   point_required: 'Point wajib diisi',
   scope_required: 'Occasion scope wajib diisi',

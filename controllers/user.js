@@ -371,6 +371,7 @@ exports.updateUser = async (req, res, next) => {
     user.place_of_birth = req.body.place_of_birth || user.place_of_birth;
     user.city_of_residence = req.body.city_of_residence || user.city_of_residence;
     user.gender = req.body.gender || user.gender;
+    user.status = req.body.status || user.status;
     await user.save({validateBeforeSave: true});
 
     data = user.toObject();
@@ -381,7 +382,7 @@ exports.updateUser = async (req, res, next) => {
   } finally {
     sendResponse(res, status, data, error, stack);
   }
-} 
+}
 
 exports.changePassword = async (req, res, next) => {
   let { status, data, error, stack } = returnData();

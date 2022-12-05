@@ -33,6 +33,7 @@ module.exports = (req, sortAttr = 'username', searchAvailable = ['username']) =>
     }
 
     if (search) {
+      console.log(searchAvailable)
       objFilterSearch = Object.assign(objFilterSearch, {
         $or: searchAvailable.map((key) => {
           return {

@@ -9,7 +9,7 @@ const handleError = require("../helper-function/handle-error");
 const returnData = require("../helper-function/return-data");
 const sendResponse = require("../helper-function/send-response");
 
-const { calendar_not_found, event_name_required, bad_request, lunar_required } = require("../utils/error-message");
+const { calendar_not_found, event_name_required, bad_request, lunar_required, calendar_name_required, year_required, year_numeric } = require("../utils/error-message");
 const pathDir = require('../utils/path-dir');
 
 const { createLog } = require("./log");
@@ -23,6 +23,9 @@ exports.createCalendar = async (req, res, next) => {
     const rows = await readXlsxFile(pathFile);
     const name = rows[0][1];
     const year = rows[1][1];
+    if (!name) throw new Error(calendar_name_required);
+    if (!year) throw new Error(year_required);
+    if (isNaN(year)) throw new Error(year_numeric);
     rows.shift();
     rows.shift();
     
@@ -105,6 +108,33 @@ exports.updateCalendar = async (req, res, next) => {
     // 7) response status 204 & create log
     status = 204;
     createLog(req.user._id, 'update calendar');
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
+exports.updateNameAndYearCalendar = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+  try {
+    // 1) set id calendar
+    const id = req.params.id;
+
+    // 2) cek calendar exist by id
+    const calendar = await Calendar.findById(id);
+    if (!calendar) throw new Error(calendar_not_found);
+
+    calendar.name = req.body.name || calendar.name;
+    calendar.year = req.body.year || calendar.year;
+
+    // 6) update calendar by id
+    await calendar.save();
+    
+    // 7) response status 204 & create log
+    status = 204;
+    createLog(req.user._id, 'update name / year calendar');
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);

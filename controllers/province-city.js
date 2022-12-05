@@ -97,7 +97,7 @@ exports.getAllProvince = async (req, res, next) => {
 
   try {
     // 1) proses query parameter pagination etc
-    const queryParams = processQueryParameter(req, 'created_at', ['username', 'fullname']);
+    const queryParams = processQueryParameter(req, 'created_at', ['province']);
 
     // 2) query data dan query count total
     const results = await Province.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-__v']);
@@ -150,11 +150,19 @@ exports.getAllCityByProvince = async (req, res, next) => {
     const id =  req.params.id;
     if (!id) throw new Error(bad_request);
     
-    // 2) query city
-    const results = await City.find({ provinceId: req.params.id });
+    const queryParams = processQueryParameter(req, 'created_at', ['city']);
+
+    // 2) query data dan query count total
+    const results = await City.find({provinceId: req.params.id, ...queryParams.objFilterSearch}).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-__v']);
+    const totalDocument = await City.find(queryParams.objFilterSearch).countDocuments();
 
     // 3) bentuk response data dan set status code = 200
     data = {
+      page: queryParams.page,
+      limit: queryParams.limit,
+      max: Math.ceil(totalDocument / queryParams.limit),
+      pageSize: [10, 25, 50, 100, 200],
+      total: totalDocument,
       values: results
     };
     status = 200;
