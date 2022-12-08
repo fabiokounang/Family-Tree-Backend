@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
-const { status_required, image_required, province_required } = require('../utils/error-message');
+const { image_required, status_required, province_required } = require('../utils/error-message');
 const Schema = mongoose.Schema;
 
-const bannerSchema = new Schema({
+const memberCardSchema = new Schema({
   image: {
     type: String,
     required: [true, image_required]
@@ -27,6 +27,6 @@ const bannerSchema = new Schema({
   }
 });
 
-const Banner = mongoose.model('banner', bannerSchema);
+const MemberCard = mongoose.model('membercard', memberCardSchema);
 
-module.exports = Banner;
+module.exports = MemberCard;

@@ -44,6 +44,8 @@ module.exports = {
   admin_not_found: 'Admin tidak ditemukan',
   user_not_found: 'User tidak ditemukan',
 
+  membercard_not_found: 'Member card not found',
+
   lunar_required: 'Nama lunar kalender wajib diisi',
   year_required: 'Tahun wajib diisi',
   year_numeric: 'Tahun wajib angka',

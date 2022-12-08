@@ -7,16 +7,95 @@ const { validationResult } = require("express-validator");
 const User = require("../model/user");
 const City = require('../model/city');
 const Province = require('../model/province');
+const Point = require('../model/point');
 
 const handleError = require("../helper-function/handle-error");
 const returnData = require("../helper-function/return-data");
 const processQueryParameter = require('../helper-function/process-query-parameter');
 const sendResponse = require("../helper-function/send-response");
+const sendEmail = require('../helper-function/send-email');
 
 const { user_not_found, bad_request, password_wrong, token_expired, password_match, email_unique, nik_unique } = require("../utils/error-message");
-const sendEmail = require('../helper-function/send-email');
-const Point = require('../model/point');
-const Calendar = require('../model/calendar');
+
+exports.createBulkUser = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+
+  try {
+    // 1) validasi request body
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) throw new Error(errors.array()[0].msg);
+
+    // 2) query find user exist / tidak
+    const user = await User.findOne({
+      $or: [{nik: req.body.nik}, {email: req.body.email}] 
+    });
+    if (user) {
+      if (user.nik === req.body.nik) throw new Error(nik_unique);
+      if (user.email === req.body.email) throw new Error(email_unique);
+    }
+
+    const province = await Province.findById(req.body.place_of_birth);
+    const city = await City.findById(req.body.city_of_residence);
+    if (!province || !city) throw new Error(bad_request);
+    const lastUser = await User.findOne().sort({ created_at: -1 }).limit(1).lean();
+    
+    let inc = null
+    if (!lastUser) inc = 1;
+    else inc = +lastUser.no_anggota + 1;
+
+    // 3) create new user
+    const newUser = new User({
+      no_anggota: inc,
+      nik: req.body.nik,
+      fullname: req.body.fullname,
+      email: req.body.email,
+      password: req.body.password,
+      gender: req.body.gender,
+      status: req.body.status || 1,
+      date_of_birth: req.body.date_of_birth,
+      place_of_birth: req.body.place_of_birth,
+      city_of_residence: req.body.city_of_residence
+    });
+
+    const result = await newUser.save();
+
+    // const year = req.body.date_of_birth.split('-')[0];
+
+    // const calendar = await Calendar.findOne({ status: 1 }).lean();
+    // if (calendar) {
+    //   calendar.calendar = JSON.parse(calendar.calendar);
+    //   const month = req.body.date_of_birth.split('-')[1];
+    //   const day = req.body.date_of_birth.split('-')[2];
+    //   const fullname = `${req.body.first_name_latin} ${req.body.last_name_latin} (${req.body.username})`;
+    //   const age = new Date().getFullYear() - year;
+    //   calendar.calendar[month][day].events.push({
+    //     name: `${fullname} Birthday`,
+    //     description: `Today ${fullname} turns ${age}`
+    //   });
+    //   await Calendar.updateOne({ _id : 'calendar._id' }, {
+    //     $set: {
+    //       calendar: JSON.stringify(calendar.calendar)
+    //     }
+    //   });
+    // }
+
+    // 4) bentuk response data dan set status code = 200
+    data = {
+      _id: result._id,
+      username: result.username,
+      fullname: result.fullname,
+      date_of_birth: result.date_of_birth,
+      gender: result.gender,
+      no_anggota: result.no_anggota
+    }
+    status = 201;
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
 
 exports.signupUser = async (req, res, next) => {
   let { status, data, error, stack } = returnData();

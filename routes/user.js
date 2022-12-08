@@ -12,6 +12,7 @@ const updateUserValidation = require('../middleware/express-validation/user/upda
 const { processImage } = require('../middleware/multer');
 
 router.post('/signup', signupUserValidation, userController.signupUser);
+router.post('/bulkcreate', checkAuthAdmin, userController.createBulkUser);
 router.post('/signin', signinUserValidation, userController.signinUser);
 router.post('/uploadimage', checkAuthUser, processImage, userController.uploadImage);
 router.post('/changepassword/:id', checkAuthUser, userController.changePassword);

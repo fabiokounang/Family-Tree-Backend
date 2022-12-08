@@ -1,37 +1,25 @@
-const cloudinary = require('cloudinary').v2;
-const mongoose = require('mongoose');
-
-const Banner = require("../model/banner");
-const Province = require('../model/province');
+const MemberCard = require("../model/membercard");
 
 const handleError = require("../helper-function/handle-error");
 const returnData = require("../helper-function/return-data");
-const processQueryParameter = require('../helper-function/process-query-parameter');
 const sendResponse = require("../helper-function/send-response");
+const { membercard_not_found } = require("../utils/error-message");
 
-const { createLog } = require("./log");
-const { banner_not_found, vendor_error, province_not_found } = require("../utils/error-message");
-
-exports.createBanner = async (req, res, next) => {
+exports.createMemberCard = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   
   try {
-    const province = await Province.findById(req.body.province);
-    if (!province) throw new Error(province_not_found);
-
-    const newBanner = new Banner({
+    const results = await MemberCard.create({
       image: req.resultFile,
       cloudinary: req.public_id,
       status: req.body.status || 1,
       province: req.body.province
     });
-
-    await newBanner.save();
-
-    createLog(req.user._id, 'create banner');
-
-    data = { _id: newBanner._id }
-    status = 201;
+ 
+    data = {
+      values: results
+    };
+    status = 200;
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
@@ -40,24 +28,24 @@ exports.createBanner = async (req, res, next) => {
   }
 }
 
-exports.updateBanner = async (req, res, next) => {
+exports.updateMemberCard = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   
   try {
-    const banner = await Banner.findById(req.params.id);
-    if (!banner) throw new Error(banner_not_found);
+    const membercard = await MemberCard.findById(req.params.id);
+    if (!membercard) throw new Error(membercard_not_found);
 
     const province = await Province.findById(req.body.province);
     if (!province) throw new Error(province_not_found);
 
-    banner.image = req.resultFile || banner.image;
-    banner.cloudinary = req.public_id || banner.cloudinary;
-    banner.status = req.body.status || banner.status;
-    banner.province = req.body.province || banner.province;
+    membercard.image = req.resultFile || membercard.image;
+    membercard.cloudinary = req.public_id || membercard.cloudinary;
+    membercard.status = req.body.status || membercard.status;
+    membercard.province = req.body.province || membercard.province;
 
     await banner.save();
 
-    createLog(req.user._id, 'update banner');
+    createLog(req.user._id, 'update member card');
 
     status = 200;
   } catch (err) {
@@ -68,7 +56,7 @@ exports.updateBanner = async (req, res, next) => {
   }
 }
 
-exports.deleteBanner = async (req, res, next) => {
+exports.deleteMemberCard = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
 
   if (process.env.NODE_ENV === 'production') {
@@ -77,11 +65,11 @@ exports.deleteBanner = async (req, res, next) => {
   
     try {
       const id = req.params.id;
-      const banner = await Banner.findById(id);
-      if (banner) {
-        const cloudinaryDelete = await cloudinary.api.delete_resources([banner.cloudinary]);
+      const membercard = await MemberCard.findById(id);
+      if (membercard) {
+        const cloudinaryDelete = await cloudinary.api.delete_resources([membercard.cloudinary]);
         if (cloudinaryDelete.deleted_counts.original <= 0) throw new Error(vendor_error);
-        await Banner.deleteOne({ _id: req.params.id }).session(session);
+        await MemberCard.deleteOne({ _id: req.params.id }).session(session);
       }
       status = 204;
       await session.commitTransaction();
@@ -96,11 +84,11 @@ exports.deleteBanner = async (req, res, next) => {
   } else {
     try {
       const id = req.params.id;
-      const banner = await Banner.findById(id);
-      if (banner) {
-        const cloudinaryDelete = await cloudinary.api.delete_resources([banner.cloudinary]);
+      const membercard = await MemberCard.findById(id);
+      if (membercard) {
+        const cloudinaryDelete = await cloudinary.api.delete_resources([membercard.cloudinary]);
         if (cloudinaryDelete.deleted_counts.original <= 0) throw new Error(vendor_error);
-        await Banner.deleteOne({ _id: req.params.id })
+        await MemberCard.deleteOne({ _id: req.params.id })
       }
       status = 204;
     } catch (err) {
@@ -112,7 +100,7 @@ exports.deleteBanner = async (req, res, next) => {
   }
 }
 
-exports.getAllBanner = async (req, res, next) => {
+exports.getAllMemberCard = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   
   try {
@@ -120,8 +108,8 @@ exports.getAllBanner = async (req, res, next) => {
     const queryParams = processQueryParameter(req, 'created_at', []);
 
     // 2) query data dan query count total
-    const results = await Banner.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-password', '-__v']);
-    const totalDocument = await Banner.find(queryParams.objFilterSearch).countDocuments();
+    const results = await MemberCard.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-password', '-__v']);
+    const totalDocument = await MemberCard.find(queryParams.objFilterSearch).countDocuments();
     const provincies = await Province.find();
  
     // 3) bentuk response data dan set status code = 200
@@ -148,16 +136,12 @@ exports.getAllBanner = async (req, res, next) => {
   }
 }
 
-exports.getAllBannerUser = async (req, res, next) => {
+exports.getBannerUser = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   
   try {
-    const results = await Banner.find({ status: 1, province: req.user.place_of_birth }).sort('-created_at');
- 
-    // 3) bentuk response data dan set status code = 200
-    data = {
-      values: results
-    };
+    const result = await Banner.findOne({ status: 1, province: req.user.place_of_birth });
+    data = result;
     status = 200;
   } catch (err) {
     stack = err.message || err.stack || err;

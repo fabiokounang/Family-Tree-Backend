@@ -14,14 +14,16 @@ const admin = require('./routes/admin');
 const user = require('./routes/user');
 const bulletin = require('./routes/bulletin');
 const banner = require('./routes/banner');
-const theme = require('./routes/theme');
 const calendar = require('./routes/calendar');
 const provincecity = require('./routes/province-city');
+const log = require('./routes/log');
+const membercard = require('./routes/membercard');
+
+const theme = require('./routes/theme');
 const broadcast = require('./routes/broadcast');
 const occasion = require('./routes/occasion');
 const point = require('./routes/point');
 const tree = require('./routes/tree');
-const log = require('./routes/log');
 
 app.enable('trust proxy');
 app.use(cors({ credentials: true, origin: true }));
@@ -31,14 +33,16 @@ app.use(cookieParser());
 app.use(compression());
 
 app.use('/api/admin', admin);
-app.use('/api/theme', theme);
-app.use('/api/bulletin', bulletin);
-app.use('/api/banner', banner);
 app.use('/api/user', user);
+app.use('/api/banner', banner);
+app.use('/api/bulletin', bulletin);
 app.use('/api/calendar', calendar);
 app.use('/api/province_city', provincecity);
-app.use('/api/broadcast', broadcast);
 app.use('/api/log', log);
+app.use('/api/membercard', membercard);
+
+app.use('/api/theme', theme);
+app.use('/api/broadcast', broadcast);
 app.use('/api/occasion', occasion);
 app.use('/api/point', point);
 app.use('/api/tree', tree);
