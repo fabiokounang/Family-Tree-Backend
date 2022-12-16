@@ -1,5 +1,5 @@
 const { body } = require('express-validator');
-const { title_required, description_required, subtitle_required, title_max_255, subtitle_max_500, description_max_1500, province_required } = require('../../../utils/error-message');
+const { title_required, description_required, subtitle_required, title_max_255, subtitle_max_500, description_max_1500 } = require('../../../utils/error-message');
 
 module.exports = [
   body('title')
@@ -12,8 +12,6 @@ module.exports = [
     .trim(),
   body('description')
     .notEmpty().withMessage(description_required)
-    .isLength({ max: 3000 }).withMessage(description_max_1500)
+    .isLength({ max: 1500 }).withMessage(description_max_1500)
     .trim(),
-  body('province')
-    .notEmpty().withMessage(province_required)
 ]

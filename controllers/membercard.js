@@ -1,9 +1,16 @@
+const cloudinary = require('cloudinary').v2;
+
 const MemberCard = require("../model/membercard");
+const Province = require("../model/province");
 
 const handleError = require("../helper-function/handle-error");
 const returnData = require("../helper-function/return-data");
 const sendResponse = require("../helper-function/send-response");
+const processQueryParameter = require('../helper-function/process-query-parameter');
+
 const { membercard_not_found } = require("../utils/error-message");
+
+const { createLog } = require('./log');
 
 exports.createMemberCard = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
@@ -43,7 +50,7 @@ exports.updateMemberCard = async (req, res, next) => {
     membercard.status = req.body.status || membercard.status;
     membercard.province = req.body.province || membercard.province;
 
-    await banner.save();
+    await membercard.save();
 
     createLog(req.user._id, 'update member card');
 
@@ -110,7 +117,7 @@ exports.getAllMemberCard = async (req, res, next) => {
     // 2) query data dan query count total
     const results = await MemberCard.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-password', '-__v']);
     const totalDocument = await MemberCard.find(queryParams.objFilterSearch).countDocuments();
-    const provincies = await Province.find();
+    const provincies = await Province.find({ status: 1 });
  
     // 3) bentuk response data dan set status code = 200
     data = {

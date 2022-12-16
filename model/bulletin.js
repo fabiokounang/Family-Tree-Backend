@@ -9,6 +9,7 @@ const bulletinSchema = new Schema({
     required: [true, title_required],
     trim: true,
     maxlength: 255,
+    unique: true
   },
   subtitle: {
     type: String,

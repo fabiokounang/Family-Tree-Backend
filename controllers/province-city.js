@@ -127,7 +127,7 @@ exports.getAllProvinceUser = async (req, res, next) => {
   try {
     // 1) proses query parameter pagination etc
     // 2) query data dan query count total
-    const results = await Province.find();
+    const results = await Province.find({ status: 1});
 
     // 3) bentuk response data dan set status code = 200
     data = {

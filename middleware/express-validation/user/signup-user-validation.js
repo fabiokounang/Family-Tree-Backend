@@ -1,12 +1,12 @@
 const { body } = require("express-validator");
-const { gender_required, password_match, password_required, password_8_16, confirmation_password_required, bad_request, email_required, email_not_valid, phone_required, phone_not_valid, phone_min_max_10_14, place_of_birth_required, city_required, fullname_required, nik_required, nik_length_fix_16 } = require("../../../utils/error-message");
+const { gender_required, password_match, password_required, password_8_16, confirmation_password_required, bad_request, email_required, email_not_valid, place_of_birth_required, city_required, fullname_required, nik_length_fix_16 } = require("../../../utils/error-message");
 
 module.exports = [
   body('fullname')
     .notEmpty().withMessage(fullname_required)
     .trim(),
   body('nik')
-    .notEmpty().withMessage(nik_required)
+    .optional({ checkFalsy: true })
     .isLength({ min: 16, max: 16 }).withMessage(nik_length_fix_16)
     .trim(),
   body('email')

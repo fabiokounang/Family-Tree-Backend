@@ -1,15 +1,15 @@
-const path = require('path');
 const readXlsxFile = require('read-excel-file/node');
 const fs = require('fs').promises;
 
 const Calendar = require("../model/calendar");
+const Province = require('../model/province');
 
 const getDaysInMonth = require("../helper-function/get-days-in-month");
 const handleError = require("../helper-function/handle-error");
 const returnData = require("../helper-function/return-data");
 const sendResponse = require("../helper-function/send-response");
 
-const { calendar_not_found, event_name_required, bad_request, lunar_required, calendar_name_required, year_required, year_numeric } = require("../utils/error-message");
+const { calendar_not_found, lunar_required, calendar_name_required, year_required, year_numeric, province_required, province_not_found, calendar_for_province_exist, bad_request } = require("../utils/error-message");
 const pathDir = require('../utils/path-dir');
 
 const { createLog } = require("./log");
@@ -25,7 +25,19 @@ exports.createCalendar = async (req, res, next) => {
     const year = rows[1][1];
     if (!name) throw new Error(calendar_name_required);
     if (!year) throw new Error(year_required);
+    if (!req.body.province) throw new Error(province_required);
+
     if (isNaN(year)) throw new Error(year_numeric);
+
+    const province = await Province.findById(req.body.province);
+    if (!province) throw new Error(province_not_found);
+
+    const calendar = await Calendar.findOne({
+      province: req.body.province,
+      year: year
+    });
+    if (calendar) throw new Error(calendar_for_province_exist);
+
     rows.shift();
     rows.shift();
     
@@ -46,13 +58,13 @@ exports.createCalendar = async (req, res, next) => {
     });
 
     // 2) query create calendar exist / tidak
-    const calendar = new Calendar({
+    const newCalendar = new Calendar({
       name: name,
       year: year,
-      calendar: JSON.stringify(arrCalendar)
+      calendar: JSON.stringify(arrCalendar),
+      province: req.body.province
     });
-
-    await calendar.save();
+    await newCalendar.save();
     
     // 4) bentuk response data dan set status code = 201
     status = 201;
@@ -67,7 +79,7 @@ exports.createCalendar = async (req, res, next) => {
   }
 }
 
-exports.updateCalendar = async (req, res, next) => {
+exports.updateEventCalendar = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   try {
     // 1) set id calendar
@@ -116,7 +128,7 @@ exports.updateCalendar = async (req, res, next) => {
   }
 }
 
-exports.updateNameAndYearCalendar = async (req, res, next) => {
+exports.updateDataCalendar = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   try {
     // 1) set id calendar
@@ -128,6 +140,8 @@ exports.updateNameAndYearCalendar = async (req, res, next) => {
 
     calendar.name = req.body.name || calendar.name;
     calendar.year = req.body.year || calendar.year;
+    calendar.province = req.body.province || calendar.province;
+
 
     // 6) update calendar by id
     await calendar.save();
@@ -170,25 +184,36 @@ exports.getAllCalendar = async (req, res, next) => {
 
   try {
     // 1) query data dan query count total
-    const results = await Calendar.find().sort({created_at: -1});
+    const calendars = await Calendar.find().sort({created_at: -1}).populate({
+      path: 'province'
+    });
+    const provincies = await Province.find({ status: 1 });
 
-    // 3) bentuk response data dan set status code = 200
-    let r = [];
-    Object.keys(results).forEach((i) => {
-      r.push({
-        _id: results[i]._id,
+    // 2) bentuk response data dan set status code = 200
+    const results = [];
+    Object.keys(calendars).forEach((i) => {
+      results.push({
+        _id: calendars[i]._id,
         index: i,
-        name: results[i].name,
-        year: results[i].year,
-        status: results[i].status,
-        created_at: results[i].created_at
+        name: calendars[i].name,
+        year: calendars[i].year,
+        status: calendars[i].status,
+        province: calendars[i].province,
+        created_at: calendars[i].created_at
       });
     });
     data = {
-      values: r
+      provincies: provincies.map((value) => {
+        return {
+          id: value._id,
+          name: value.province
+        }
+      }),
+      values: results
     };
     status = 200;
   } catch (err) {
+    console.log(err)
     stack = err.message || err.stack || err;
     error = handleError(err);
   } finally {
@@ -200,12 +225,16 @@ exports.updateStatusCalendar = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   try {
     const id = req.params.id;
+    if (!req.body.province) throw new Error(bad_request);
 
     const calendar = await Calendar.findById(id);
     if (!calendar) throw new Error(calendar_not_found);
+    
     calendar.status = req.body.status ? 1 : (2 || calendar.status);
 
-    await Calendar.updateMany({}, {
+    await Calendar.updateMany({
+      province: req.body.province
+    }, {
       $set: {
         status: 2 // not active
       }
@@ -246,14 +275,15 @@ exports.getOneCalendarAdmin = async (req, res, next) => {
   }
 }
 
-exports.getOneCalendar = async (req, res, next) => {
+exports.getOneCalendarUser = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
 
   try {
     // 1) query data calendar aktif
-    const result = await Calendar.findOne({ status: 1 }).lean();
+    const result = await Calendar.findOne({ status: 1, province: req.user.place_of_birth }).lean();
     if (!result) {
       status = 200;
+      data = { value: {} }
       return;
     }
     result.calendar = JSON.parse(result.calendar);

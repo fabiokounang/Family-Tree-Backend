@@ -10,12 +10,12 @@ const updateDataCalendarValidation = require('../middleware/express-validation/c
 const multerExcel = require('../middleware/multer-excel');
 
 router.post('/create', checkAuthAdmin, multerExcel, calendarController.createCalendar);
-router.post('/update/:id', checkAuthAdmin, updateCalendarValidation, calendarController.updateCalendar);
-router.post('/update_data/:id', checkAuthAdmin, updateDataCalendarValidation, calendarController.updateNameAndYearCalendar);
+router.post('/update/:id', checkAuthAdmin, updateCalendarValidation, calendarController.updateEventCalendar);
+router.post('/update_data/:id', checkAuthAdmin, updateDataCalendarValidation, calendarController.updateDataCalendar);
 router.post('/update_status/:id', checkAuthAdmin, calendarController.updateStatusCalendar);
 router.post('/delete/:id', checkAuthAdmin, calendarController.deleteCalendar);
 router.post('/admin/active/:id', checkAuthAdmin, calendarController.getOneCalendarAdmin);
-router.post('/user/active', checkAuthUser, calendarController.getOneCalendar);
+router.post('/user/active', checkAuthUser, calendarController.getOneCalendarUser);
 router.post('/', checkAuthAdmin, calendarController.getAllCalendar);
 
 // [

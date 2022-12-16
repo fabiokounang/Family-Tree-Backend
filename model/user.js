@@ -13,7 +13,6 @@ const userSchema = new Schema({
   },
   nik: {
     type: String,
-    required: [true, nik_required],
     trim: true,
     unique: true,
     length: 16

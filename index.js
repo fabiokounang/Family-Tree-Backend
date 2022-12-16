@@ -73,7 +73,7 @@ process.on('warning', (warning) => {
   console.warn('WARNING stack : ' + warning.stack);
   server.close(() => {
     console.log('Server closed gracefully');
-    process.exit();
+    process.exit(0);
   });
 });
 
@@ -83,7 +83,7 @@ process.on('unhandledRejection', (err) => {
   console.log(err.message);
   server.close(() => {
     console.log('Server closed gracefully');
-    process.exit();
+    process.exit(0);
   });
 });
 
@@ -93,7 +93,7 @@ process.on('uncaughtException', (err) => {
   console.log('MESSAGE ' + err.message);
   server.close(() => {
     console.log('Server closed gracefully');
-    process.exit();
+    process.exit(0);
   });
 });
 
@@ -101,6 +101,6 @@ process.on('SIGTERM', () => {
   console.log('SIGTERM RECEIVED, shutting down gracefully');
   server.close(() => {
     console.log('Server closed gracefully');
-    process.exit();
+    process.exit(0);
   });
 });

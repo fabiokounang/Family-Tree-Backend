@@ -12,20 +12,20 @@ module.exports = {
   nik_unique: 'NIK sudah terdaftar',
   
   username_required: 'Username wajib diisi',
-  username_unique: 'Username already registered',
+  username_unique: 'Username sudah terdaftar',
   username_max_30: 'Username max 30 characters',
   username_alphanumeric: 'Username is alphanumeric only',
 
-  email_unique: 'Email already registered',
-  phone_unique: 'Phone already registered',
-  wechat_unique: 'Wechat already registered',
+  email_unique: 'Email sudah terdaftar',
+  phone_unique: 'Phone sudah terdaftar',
+  wechat_unique: 'Wechat sudah terdaftar',
   
   password_required: 'Password wajib diisi',
   password_8_16: 'Password minimal 8 karakter dan maksimal 16 karakter',
   password_match: 'Password dan konfirmasi password tidak sesuai',
   password_wrong: 'Password anda tidak sesuai',
   password_alphanumeric: 'Password must be alphanumeric only',
-  confirmation_password_required: 'Confirmation password wajib diisi',
+  confirmation_password_required: 'Konfirmasi password wajib diisi',
   
   status_required: 'Status wajib diisi',
   status_not_valid: 'Status tidak valid',
@@ -38,8 +38,9 @@ module.exports = {
   color_required: 'Color wajib diisi',
   theme_unique: 'Theme unique',
 
-  calendar_not_found: 'Calendar tidak ditemukan',
-  calendar_name_required: 'Calendar name wajib diisi',
+  calendar_not_found: 'Kalender tidak ditemukan',
+  calendar_name_required: 'Kalender name wajib diisi',
+  calendar_for_province_exist: 'Kalender untuk provinsi ini sudah ada',
   
   admin_not_found: 'Admin tidak ditemukan',
   user_not_found: 'User tidak ditemukan',
@@ -67,6 +68,9 @@ module.exports = {
   title_max_255: 'Judul maksimal 255 karakter',
   subtitle_max_500: 'Subtitle maksimal 500 karakter',
   description_max_1500: 'Deskripsi maksimal 1500 karakter',
+
+  banner_unique: 'Banner sudah ada, silahkan coba judul lain',
+
   bulletin_unique: 'Bulletin sudah ada, silahkan coba judul lain',
   bulletin_not_found: 'Bulletin tidak ditemukan',
 

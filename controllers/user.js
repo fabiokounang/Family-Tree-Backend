@@ -8,6 +8,7 @@ const User = require("../model/user");
 const City = require('../model/city');
 const Province = require('../model/province');
 const Point = require('../model/point');
+const MemberCard = require('../model/membercard');
 
 const handleError = require("../helper-function/handle-error");
 const returnData = require("../helper-function/return-data");
@@ -126,7 +127,7 @@ exports.signupUser = async (req, res, next) => {
     // 3) create new user
     const newUser = new User({
       no_anggota: inc,
-      nik: req.body.nik,
+      nik: req.body.nik || '',
       fullname: req.body.fullname,
       email: req.body.email,
       password: req.body.password,
@@ -416,8 +417,15 @@ exports.getOneUser = async (req, res, next) => {
     }, 0);
     user.point = total;
 
+    const userMemberCard = await MemberCard.findOne({
+      province: req.user.place_of_birth
+    }).lean();
+
     // 3) bentuk response data dan set status code = 200
-    data = user.toJSON();
+    data = {
+      ...user.toJSON(),
+      membercard: userMemberCard
+    }
     status = 200;
   } catch (err) {
     stack = err.message || err.stack || err;
@@ -439,9 +447,8 @@ exports.updateUser = async (req, res, next) => {
     if (!errors.isEmpty()) throw new Error(errors.array()[0].msg);
 
     // 3) query find user by id
-    let user = await User.findById(id).select(['fullname', 'email', 'chinese_name', 'place_of_birth', 'city_of_residence', 'gender']);
+    let user = await User.findById(id).select(['fullname', 'email', 'chinese_name', 'place_of_birth', 'city_of_residence', 'gender', 'status']);
     if (!user) throw(user_not_found);
-
 
     //4) query update data user
     user.fullname = req.body.fullname || user.fullname;
@@ -450,7 +457,7 @@ exports.updateUser = async (req, res, next) => {
     user.place_of_birth = req.body.place_of_birth || user.place_of_birth;
     user.city_of_residence = req.body.city_of_residence || user.city_of_residence;
     user.gender = req.body.gender || user.gender;
-    user.status = req.body.status || user.status;
+    user.nik = req.body.nik || user.nik;
     await user.save({validateBeforeSave: true});
 
     data = user.toObject();

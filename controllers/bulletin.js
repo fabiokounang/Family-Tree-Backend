@@ -57,6 +57,9 @@ exports.updateBulletin = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) throw new Error(bad_request);
+
     const bulletin = await Bulletin.findById(req.params.id);
     if (!bulletin) throw new Error(bulletin_not_found);
 
@@ -140,7 +143,7 @@ exports.getAllBulletin = async (req, res, next) => {
       path: 'province'
     });
     const totalDocument = await Bulletin.find(queryParams.objFilterSearch).countDocuments();
-    const provincies = await Province.find();
+    const provincies = await Province.find({ status: 1});
  
     // 3) bentuk response data dan set status code = 200
     data = {

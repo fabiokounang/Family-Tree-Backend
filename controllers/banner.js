@@ -10,16 +10,26 @@ const processQueryParameter = require('../helper-function/process-query-paramete
 const sendResponse = require("../helper-function/send-response");
 
 const { createLog } = require("./log");
-const { banner_not_found, vendor_error, province_not_found } = require("../utils/error-message");
+const { banner_not_found, vendor_error, province_not_found, banner_unique, bad_request } = require("../utils/error-message");
+const { validationResult } = require('express-validator');
 
 exports.createBanner = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) throw new Error(bad_request);
+
+    const banner = await Banner.findOne({ title: req.body.title });
+    if (banner) throw new Error(banner_unique);
+
     const province = await Province.findById(req.body.province);
     if (!province) throw new Error(province_not_found);
 
     const newBanner = new Banner({
+      title: req.body.title,
+      subtitle: req.body.subtitle,
+      description: req.body.description,
       image: req.resultFile,
       cloudinary: req.public_id,
       status: req.body.status || 1,
@@ -44,12 +54,18 @@ exports.updateBanner = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) throw new Error(bad_request);
+
     const banner = await Banner.findById(req.params.id);
     if (!banner) throw new Error(banner_not_found);
 
     const province = await Province.findById(req.body.province);
     if (!province) throw new Error(province_not_found);
 
+    banner.title = req.body.title || banner.title;
+    banner.subtitle = req.body.subtitle || banner.subtitle;
+    banner.description = req.body.description || banner.description;  
     banner.image = req.resultFile || banner.image;
     banner.cloudinary = req.public_id || banner.cloudinary;
     banner.status = req.body.status || banner.status;
@@ -120,9 +136,9 @@ exports.getAllBanner = async (req, res, next) => {
     const queryParams = processQueryParameter(req, 'created_at', []);
 
     // 2) query data dan query count total
-    const results = await Banner.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-password', '-__v']);
+    const results = await Banner.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-password', '-__v']).populate('province');
     const totalDocument = await Banner.find(queryParams.objFilterSearch).countDocuments();
-    const provincies = await Province.find();
+    const provincies = await Province.find({ status: 1});
  
     // 3) bentuk response data dan set status code = 200
     data = {
@@ -158,6 +174,24 @@ exports.getAllBannerUser = async (req, res, next) => {
     data = {
       values: results
     };
+    status = 200;
+  } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
+exports.getBanner = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+  
+  try {
+    const banner = await Banner.findById(req.params.id).lean();
+    if (banner.province.toString() != req.user.place_of_birth.toString()) throw new Error(bad_request);
+    if (!banner) throw new Error(bad_request);
+
+    data = banner;
     status = 200;
   } catch (err) {
     stack = err.message || err.stack || err;
