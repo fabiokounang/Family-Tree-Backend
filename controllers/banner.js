@@ -95,7 +95,7 @@ exports.deleteBanner = async (req, res, next) => {
       const id = req.params.id;
       const banner = await Banner.findById(id);
       if (banner) {
-        const cloudinaryDelete = await cloudinary.api.delete_resources([banner.cloudinary]);
+        cloudinary.api.delete_resources([banner.cloudinary]);
         if (cloudinaryDelete.deleted_counts.original <= 0) throw new Error(vendor_error);
         await Banner.deleteOne({ _id: req.params.id }).session(session);
       }
@@ -114,7 +114,7 @@ exports.deleteBanner = async (req, res, next) => {
       const id = req.params.id;
       const banner = await Banner.findById(id);
       if (banner) {
-        const cloudinaryDelete = await cloudinary.api.delete_resources([banner.cloudinary]);
+        cloudinary.api.delete_resources([banner.cloudinary]);
         if (cloudinaryDelete.deleted_counts.original <= 0) throw new Error(vendor_error);
         await Banner.deleteOne({ _id: req.params.id })
       }

@@ -96,7 +96,7 @@ exports.deleteBulletin = async (req, res, next) => {
       const id = req.params.id;
       const bulletin = await Bulletin.findById(id);
       if (bulletin) {
-        const cloudinaryDelete = await cloudinary.api.delete_resources([bulletin.cloudinary]);
+        cloudinary.api.delete_resources([bulletin.cloudinary]);
         if (cloudinaryDelete.deleted_counts.original <= 0) throw new Error(vendor_error);
         await bulletin.deleteOne({ _id: req.params.id }).session(session);
       }
@@ -115,7 +115,7 @@ exports.deleteBulletin = async (req, res, next) => {
       const id = req.params.id;
       const bulletin = await Bulletin.findById(id);
       if (bulletin) {
-        const cloudinaryDelete = await cloudinary.api.delete_resources([bulletin.cloudinary]);
+        cloudinary.api.delete_resources([bulletin.cloudinary]);
         if (cloudinaryDelete.deleted_counts.original <= 0) throw new Error(vendor_error);
         await bulletin.deleteOne({ _id: req.params.id });
       }
