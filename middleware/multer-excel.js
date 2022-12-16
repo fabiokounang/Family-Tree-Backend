@@ -15,14 +15,18 @@ const storage = multer.diskStorage({
 
 
 const excelFilter = (req, file, cb) => {
-  if (file.mimetype.includes("excel") || file.mimetype.includes("spreadsheetml")) {
-    cb(null, true);
+  if (!file) {
+    cb("File excel required", false);
   } else {
-    cb("Please upload only excel file.", false);
+    if (file.mimetype.includes("excel") || file.mimetype.includes("spreadsheetml")) {
+      cb(null, true);
+    } else {
+      cb("Please upload only excel file.", false);
+    }
   }
 };
 
-const upload = multer({ storage: storage, fileFilter: excelFilter }).any('file');
+const upload = multer({ storage: storage, fileFilter: excelFilter }).single('file');
 
 module.exports = (req, res, next) => {
   upload(req, res, (err) => {
@@ -33,7 +37,8 @@ module.exports = (req, res, next) => {
         error: err.message
       });
     } else {
-      req.fileUpload = req.files[0];
+      console.log(req.file)
+      req.fileUpload = req.file;
       next();
     }
   });

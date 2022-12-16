@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const readXlsxFile = require('read-excel-file/node');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
@@ -17,14 +17,20 @@ const sendResponse = require("../helper-function/send-response");
 const sendEmail = require('../helper-function/send-email');
 
 const { user_not_found, bad_request, password_wrong, token_expired, password_match, email_unique, nik_unique } = require("../utils/error-message");
+const { createLog } = require('./log');
+const pathDir = require('../utils/path-dir');
 
 exports.createBulkUser = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
+  const pathFile = pathDir(req.fileUpload.filename);
 
   try {
     // 1) validasi request body
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new Error(errors.array()[0].msg);
+
+    const rows = await readXlsxFile(pathFile);
+    console.log(rows);
 
     // 2) query find user exist / tidak
     const user = await User.findOne({
@@ -516,6 +522,7 @@ exports.updatePasswordUser = async (req, res, next) => {
     user.password = req.body.password || user.password;
     await user.save({validateBeforeSave: true});
 
+    createLog(req.user._id, 'update password user');
     status = 200;
   } catch (err) {
     stack = err.message || err.stack || err;
@@ -546,6 +553,29 @@ exports.updateTokenFcm = async (req, res, next) => {
     data = user.toObject();
     status = 200;
   } catch (err) {
+    stack = err.message || err.stack || err;
+    error = handleError(err);
+  } finally {
+    sendResponse(res, status, data, error, stack);
+  }
+}
+
+exports.deleteUser = async (req, res, next) => {
+  let { status, data, error, stack } = returnData();
+  try {
+    // 1) set id admin
+    const id = req.params.id;
+    if (!id) throw new Error(bad_request);
+
+    // 2) query delete admin by id
+    await User.deleteOne({ _id: id });
+
+    status = 204;
+
+    createLog(req.user._id, 'delete user');
+
+  } catch (err) {
+    console.log(err)
     stack = err.message || err.stack || err;
     error = handleError(err);
   } finally {

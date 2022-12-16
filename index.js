@@ -56,51 +56,50 @@ app.all('*', (req, res) => {
   });
 });
 
-let server;
+let server = app.listen(port, () => {
+  console.log('Marga server is listening to port ' + port);
+}).on('error', (err) => {
+  console.log('Error listening to port ' + port);
+  console.log(err.name)
+  console.log(err.message)
+  console.log(err.stack);
+});
+
 mongoose.connect(process.env.MONGO_CONNECTION, { 
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(async() => {
   console.log('Database marga is connected');
-  server = app.listen(port, () => {
-    console.log('Marga server is listening to port ' + port);
-  });
 }).catch(err => console.log('Error connecting database', err));
 
-process.on('warning', (warning) => {
-  console.log('WARNING name : ' + warning.name);
-  console.warn('WARNING message : ' + warning.message);
-  console.warn('WARNING stack : ' + warning.stack);
+function close (type, err) {
+  console.log(type);
+  console.log('NAME ' + err.name);
+  console.log('MESSAGE ' + err.message);
+  console.log('MESSAGE ' + err.stack);
   server.close(() => {
     console.log('Server closed gracefully');
     process.exit(0);
   });
+}
+
+process.on('warning', (err) => {
+  close('ERROR WARNING', err);
 });
 
 process.on('unhandledRejection', (err) => {
-  console.log('UNHANDLED REJECTION');
-  console.log(err.name);
-  console.log(err.message);
-  server.close(() => {
-    console.log('Server closed gracefully');
-    process.exit(0);
-  });
+  close('UNHANDLED REJECTION', err);
 });
 
 process.on('uncaughtException', (err) => {
-  console.log('UNCAUGHT EXCEPTION');
-  console.log('NAME ' + err.name);
-  console.log('MESSAGE ' + err.message);
-  server.close(() => {
-    console.log('Server closed gracefully');
-    process.exit(0);
-  });
+  close('UNCAUGHT EXCEPTION', err);
 });
 
-process.on('SIGTERM', () => {
+process.on('SIGTERM', (signal) => {
   console.log('SIGTERM RECEIVED, shutting down gracefully');
-  server.close(() => {
-    console.log('Server closed gracefully');
-    process.exit(0);
-  });
+  close('SIGTERM RECEIVED', {});
+});
+
+process.on('uncaughtExceptionMonitor', (err) => {
+  close('UNHANDLED REJECTION MONITOR', err);
 });
