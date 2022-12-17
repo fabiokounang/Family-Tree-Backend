@@ -136,8 +136,15 @@ exports.getAllBanner = async (req, res, next) => {
     const queryParams = processQueryParameter(req, 'created_at', []);
 
     // 2) query data dan query count total
-    const results = await Banner.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-password', '-__v']).populate('province');
-    const totalDocument = await Banner.find(queryParams.objFilterSearch).countDocuments();
+    let objFilter = { ...queryParams.objFilterSearch }
+    if (req.user.role > 1) {
+      objFilter = Object.assign({}, objFilter, {
+        province: { $in: req.user.province }
+      })
+    }
+    
+    const results = await Banner.find(objFilter).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-password', '-__v']).populate('province');
+    const totalDocument = await Banner.find(objFilter).countDocuments();
     const provincies = await Province.find({ status: 1});
  
     // 3) bentuk response data dan set status code = 200
@@ -157,6 +164,7 @@ exports.getAllBanner = async (req, res, next) => {
     };
     status = 200;
   } catch (err) {
+    console.log(err)
     stack = err.message || err.stack || err;
     error = handleError(err);
   } finally {

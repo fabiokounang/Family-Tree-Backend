@@ -44,6 +44,8 @@ module.exports = {
   
   admin_not_found: 'Admin tidak ditemukan',
   user_not_found: 'User tidak ditemukan',
+  province_not_valid: "Province not valid",
+  city_not_valid: "City not valid",
 
   membercard_not_found: 'Member card not found',
 

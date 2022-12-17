@@ -184,7 +184,13 @@ exports.getAllCalendar = async (req, res, next) => {
 
   try {
     // 1) query data dan query count total
-    const calendars = await Calendar.find().sort({created_at: -1}).populate({
+    let objFilter = {}
+    if (req.user.role > 1) {
+      objFilter = Object.assign({}, objFilter, {
+        province: { $in: req.user.province }
+      })
+    }
+    const calendars = await Calendar.find(objFilter).sort({created_at: -1}).populate({
       path: 'province'
     });
     const provincies = await Province.find({ status: 1 });

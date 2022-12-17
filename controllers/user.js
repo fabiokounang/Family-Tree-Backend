@@ -1,3 +1,4 @@
+const fs = require('fs').promises;
 const readXlsxFile = require('read-excel-file/node');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -16,7 +17,7 @@ const processQueryParameter = require('../helper-function/process-query-paramete
 const sendResponse = require("../helper-function/send-response");
 const sendEmail = require('../helper-function/send-email');
 
-const { user_not_found, bad_request, password_wrong, token_expired, password_match, email_unique, nik_unique } = require("../utils/error-message");
+const { user_not_found, bad_request, password_wrong, token_expired, password_match, email_unique, nik_unique, province_required, city_required, email_required, province_not_valid, city_not_valid } = require("../utils/error-message");
 const { createLog } = require('./log');
 const pathDir = require('../utils/path-dir');
 
@@ -30,41 +31,81 @@ exports.createBulkUser = async (req, res, next) => {
     if (!errors.isEmpty()) throw new Error(errors.array()[0].msg);
 
     const rows = await readXlsxFile(pathFile);
-    console.log(rows);
+    rows.shift();
+    rows.shift();
+    rows.shift();
 
-    // 2) query find user exist / tidak
-    const user = await User.findOne({
-      $or: [{nik: req.body.nik}, {email: req.body.email}] 
+    const column = rows[0];
+    const dataUser = rows.slice(1);
+
+    let result = dataUser.map((value) => {
+      return {
+        [column[0]]: value[0],
+        [column[1]]: value[1],
+        [column[2]]: value[2],
+        [column[3]]: value[3],
+        [column[4]]: value[4],
+        [column[5]]: value[5],
+        [column[6]]: value[6],
+        [column[7]]: value[7],
+        [column[8]]: value[8]
+      }
     });
-    if (user) {
-      if (user.nik === req.body.nik) throw new Error(nik_unique);
-      if (user.email === req.body.email) throw new Error(email_unique);
+
+    const userEmail = result.map(val => val.email);
+    if (userEmail.length != result.length) throw new Error(email_required);
+
+    const userNik = result.map(val => val.nik).filter(val => val);
+    
+    const provinces = result.map((val) => val.place_of_birth?.split('_').join(' ').trim()).filter(val => val);
+    if (provinces.length != result.length) throw new Error(province_required);
+    
+    const cities = result.map(val => val.city_of_residence?.split('_').join(' ').trim()).filter(val => val);
+    if (cities.length != result.length) throw new Error(city_required);
+
+    const users = await User.find({ 
+      $or: [
+        { nik: { $in: userNik } },
+        { email: { $in: userEmail }  }
+      ]
+    });
+
+    if (users.length > 0) {
+      result = result.filter((value) => {
+        const isExist = users.find(val => val.email == value.email);
+        if (!isExist) return true;
+        return false;
+      });
     }
 
-    const province = await Province.findById(req.body.place_of_birth);
-    const city = await City.findById(req.body.city_of_residence);
-    if (!province || !city) throw new Error(bad_request);
-    const lastUser = await User.findOne().sort({ created_at: -1 }).limit(1).lean();
+    const dbProvince = await Province.find({ province: { $in: provinces }});
+    if (dbProvince.length != result.length) throw new Error(province_not_valid);
+
+    const dbCities = await City.find({ city: { $in: cities }});
+    if (dbCities.length != result.length) throw new Error(city_not_valid);
+    // const city = await City.findById(req.body.city_of_residence);
+    // if (!city || !city) throw new Error(bad_request);
+    // const lastUser = await User.findOne().sort({ created_at: -1 }).limit(1).lean();
     
-    let inc = null
-    if (!lastUser) inc = 1;
-    else inc = +lastUser.no_anggota + 1;
+    // let inc = null
+    // if (!lastUser) inc = 1;
+    // else inc = +lastUser.no_anggota + 1;
 
-    // 3) create new user
-    const newUser = new User({
-      no_anggota: inc,
-      nik: req.body.nik,
-      fullname: req.body.fullname,
-      email: req.body.email,
-      password: req.body.password,
-      gender: req.body.gender,
-      status: req.body.status || 1,
-      date_of_birth: req.body.date_of_birth,
-      place_of_birth: req.body.place_of_birth,
-      city_of_residence: req.body.city_of_residence
-    });
+    // // 3) create new user
+    // const newUser = new User({
+    //   no_anggota: inc,
+    //   nik: req.body.nik,
+    //   fullname: req.body.fullname,
+    //   email: req.body.email,
+    //   password: req.body.password,
+    //   gender: req.body.gender,
+    //   status: req.body.status || 1,
+    //   date_of_birth: req.body.date_of_birth,
+    //   place_of_birth: req.body.place_of_birth,
+    //   city_of_residence: req.body.city_of_residence
+    // });
 
-    const result = await newUser.save();
+    // const result = await newUser.save();
 
     // const year = req.body.date_of_birth.split('-')[0];
 
@@ -87,19 +128,20 @@ exports.createBulkUser = async (req, res, next) => {
     // }
 
     // 4) bentuk response data dan set status code = 200
-    data = {
-      _id: result._id,
-      username: result.username,
-      fullname: result.fullname,
-      date_of_birth: result.date_of_birth,
-      gender: result.gender,
-      no_anggota: result.no_anggota
-    }
+    // data = {
+    //   _id: result._id,
+    //   username: result.username,
+    //   fullname: result.fullname,
+    //   date_of_birth: result.date_of_birth,
+    //   gender: result.gender,
+    //   no_anggota: result.no_anggota
+    // }
     status = 201;
   } catch (err) {
     stack = err.message || err.stack || err;
     error = handleError(err);
   } finally {
+    fs.unlink(pathFile);
     sendResponse(res, status, data, error, stack);
   }
 }

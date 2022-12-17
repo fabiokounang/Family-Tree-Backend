@@ -37,7 +37,6 @@ module.exports = (req, res, next) => {
         error: err.message
       });
     } else {
-      console.log(req.file)
       req.fileUpload = req.file;
       next();
     }
