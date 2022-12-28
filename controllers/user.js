@@ -1,6 +1,8 @@
 const fs = require('fs').promises;
 const readXlsxFile = require('read-excel-file/node');
 const bcryptjs = require('bcryptjs');
+const salt = bcryptjs.genSaltSync(12);
+
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { validationResult } = require("express-validator");
@@ -38,10 +40,16 @@ exports.createBulkUser = async (req, res, next) => {
     const column = rows[0];
     const dataUser = rows.slice(1);
 
+    const lastUser = await User.findOne().sort({ created_at: -1 }).limit(1).lean();
+    let inc = null
+    if (!lastUser) inc = 1;
+    else inc = +lastUser.no_anggota + 1;
+
     let result = dataUser.map((value) => {
       return {
+        no_anggota: inc++,
         [column[0]]: value[0],
-        [column[1]]: value[1],
+        [column[1]]: value[1] || undefined,
         [column[2]]: value[2],
         [column[3]]: value[3],
         [column[4]]: value[4],
@@ -51,7 +59,7 @@ exports.createBulkUser = async (req, res, next) => {
         [column[8]]: value[8]
       }
     });
-
+    
     const userEmail = result.map(val => val.email);
     if (userEmail.length != result.length) throw new Error(email_required);
 
@@ -77,35 +85,30 @@ exports.createBulkUser = async (req, res, next) => {
         return false;
       });
     }
-
-    const dbProvince = await Province.find({ province: { $in: provinces }});
-    if (dbProvince.length != result.length) throw new Error(province_not_valid);
-
-    const dbCities = await City.find({ city: { $in: cities }});
-    if (dbCities.length != result.length) throw new Error(city_not_valid);
-    // const city = await City.findById(req.body.city_of_residence);
-    // if (!city || !city) throw new Error(bad_request);
-    // const lastUser = await User.findOne().sort({ created_at: -1 }).limit(1).lean();
     
-    // let inc = null
-    // if (!lastUser) inc = 1;
-    // else inc = +lastUser.no_anggota + 1;
+    const dbProvince = await Province.find({ province: { $in: provinces }});
+    if (dbProvince.length != provinces.length) throw new Error(province_not_valid);
 
-    // // 3) create new user
-    // const newUser = new User({
-    //   no_anggota: inc,
-    //   nik: req.body.nik,
-    //   fullname: req.body.fullname,
-    //   email: req.body.email,
-    //   password: req.body.password,
-    //   gender: req.body.gender,
-    //   status: req.body.status || 1,
-    //   date_of_birth: req.body.date_of_birth,
-    //   place_of_birth: req.body.place_of_birth,
-    //   city_of_residence: req.body.city_of_residence
-    // });
+    const dbObjProvince = {};
+    dbProvince.forEach((value) => {
+      dbObjProvince[value.province] = value;
+    });
+    
+    const dbCities = await City.find({ city: { $in: cities }});
+    if (dbCities.length != cities.length) throw new Error(city_not_valid);
+    const dbObjCity = {};
+    dbCities.forEach((value) => {
+      dbObjCity[value.city] = value;
+    });  
+    
+    result = result.map((value) => {
+      value.place_of_birth = dbObjProvince[value.place_of_birth.split('_').join(' ')]._id;
+      value.city_of_residence = dbObjCity[value.city_of_residence.split('_').join(' ')]._id;
+      return value;
+    });
 
-    // const result = await newUser.save();
+    // 3) create new user
+    const newUsers = await User.insertMany(result);
 
     // const year = req.body.date_of_birth.split('-')[0];
 
@@ -136,8 +139,10 @@ exports.createBulkUser = async (req, res, next) => {
     //   gender: result.gender,
     //   no_anggota: result.no_anggota
     // }
+
     status = 201;
   } catch (err) {
+    console.log(err)
     stack = err.message || err.stack || err;
     error = handleError(err);
   } finally {
