@@ -1,5 +1,5 @@
 const { body } = require("express-validator");
-const { gender_required, password_match, password_required, password_8_16, confirmation_password_required, bad_request, email_required, email_not_valid, place_of_birth_required, city_required, fullname_required, nik_length_fix_16 } = require("../../../utils/error-message");
+const { gender_required, password_match, password_required, password_8_16, confirmation_password_required, bad_request, email_required, email_not_valid, place_of_birth_required, city_required, fullname_required, nik_length_fix_16, password_alphanumeric } = require("../../../utils/error-message");
 
 module.exports = [
   body('fullname')
@@ -16,6 +16,7 @@ module.exports = [
   body('password')
     .notEmpty().withMessage(password_required)
     .isLength({ min: 6, max: 16 }).withMessage(password_8_16)
+    .isAlphanumeric().withMessage(password_alphanumeric)
     .trim(),
   body('confirmation_password')
     .notEmpty().withMessage(confirmation_password_required)
