@@ -14,7 +14,6 @@ const { createLog } = require('./log');
 
 const { username_unique, bad_request, admin_not_found, password_wrong, province_required } = require("../utils/error-message");
 
-
 exports.createAdmin = async (req, res, next) => {
   let { status, data, error, stack } = returnData();
   try {
