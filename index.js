@@ -65,6 +65,7 @@ let server = app.listen(port, () => {
   console.log(err.stack);
 });
 
+console.log(process.env.MONGO_CONNECTION)
 mongoose.connect(process.env.MONGO_CONNECTION, { 
   useNewUrlParser: true,
   useUnifiedTopology: true
