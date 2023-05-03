@@ -65,10 +65,10 @@ exports.createBulkUser = async (req, res, next) => {
 
     const userNik = result.map(val => val.nik).filter(val => val);
     
-    const provinces = result.map((val) => val.place_of_birth?.split('_').join(' ').trim()).filter(val => val);
+    const provinces = result.map((val) => val.place_of_birth);
     if (provinces.length != result.length) throw new Error(province_required);
     
-    const cities = result.map(val => val.city_of_residence?.split('_').join(' ').trim()).filter(val => val);
+    const cities = result.map(val => val.city_of_residence);
     if (cities.length != result.length) throw new Error(city_required);
 
     const users = await User.find({ 
@@ -86,29 +86,29 @@ exports.createBulkUser = async (req, res, next) => {
       });
     }
     
-    const dbProvince = await Province.find({ province: { $in: provinces }});
-    if (dbProvince.length != provinces.length) throw new Error(province_not_valid);
+    const dbProvince = await Province.find({ slug: { $in: provinces }});
+    if (dbProvince.length != [...new Set(provinces)].length) throw new Error(province_not_valid);
 
     const dbObjProvince = {};
     dbProvince.forEach((value) => {
-      dbObjProvince[value.province] = value;
+      dbObjProvince[value.slug] = value;
     });
     
-    const dbCities = await City.find({ city: { $in: cities }});
-    if (dbCities.length != cities.length) throw new Error(city_not_valid);
+    const dbCities = await City.find({ slug: { $in: cities }});
+    if (dbCities.length != [...new Set(cities)].length) throw new Error(city_not_valid);
     const dbObjCity = {};
     dbCities.forEach((value) => {
-      dbObjCity[value.city] = value;
+      dbObjCity[value.slug] = value;
     });  
-    
+
     result = result.map((value) => {
-      value.place_of_birth = dbObjProvince[value.place_of_birth.split('_').join(' ')]._id;
-      value.city_of_residence = dbObjCity[value.city_of_residence.split('_').join(' ')]._id;
+      value.place_of_birth = dbObjProvince[value.place_of_birth]._id;
+      value.city_of_residence = dbObjCity[value.city_of_residence]._id;
       return value;
     });
 
-    // 3) create new user
-    const newUsers = await User.insertMany(result);
+    // 3) create new users
+    await User.insertMany(result);
 
     // const year = req.body.date_of_birth.split('-')[0];
 

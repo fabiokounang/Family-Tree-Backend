@@ -15,6 +15,11 @@ const citySchema = new Schema({
     required: true,
     lowercase: true
   },
+  slug: {
+    type: String,
+    required: true,
+    lowercase: true
+  },
   created_at: {
     type: String,
     default: Date.now

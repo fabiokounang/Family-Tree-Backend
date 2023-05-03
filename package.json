@@ -27,6 +27,7 @@
     "nodemailer": "^6.8.0",
     "read-excel-file": "^5.5.3",
     "sharp": "^0.31.2",
+    "slugify": "^1.6.6",
     "web-push": "^3.5.0"
   },
   "engines": {

@@ -1,5 +1,5 @@
 const { validationResult } = require('express-validator');
-
+const slugify = require('slugify');
 const Province = require('../model/province');
 const City = require('../model/city');
 
@@ -32,7 +32,11 @@ exports.createProvince = async (req, res, next) => {
 
     const newProvince = new Province({
       code: inc,
-      province: req.body.province
+      province: req.body.province,
+      slug: slugify(req.body.province, {
+        replacement: '-',
+        lower: true
+      })
     });
     const result = await newProvince.save();
 
@@ -71,7 +75,11 @@ exports.createCity = async (req, res, next) => {
     const newCity = new City({
       code: inc,
       provinceId: req.body.province,
-      city: req.body.city
+      city: req.body.city,
+      slug: slugify(req.body.city, {
+        replacement: '-',
+        lower: true
+      })
     });
     const result = await newCity.save();
 
@@ -98,7 +106,7 @@ exports.getAllProvince = async (req, res, next) => {
   try {
     // 1) proses query parameter pagination etc
     const queryParams = processQueryParameter(req, 'created_at', ['province']);
-
+    console.log('asd')
     // 2) query data dan query count total
     const results = await Province.find(queryParams.objFilterSearch).sort(queryParams.sort).skip(queryParams.page * queryParams.limit).limit(queryParams.limit).select(['-__v']);
     const totalDocument = await Province.find(queryParams.objFilterSearch).countDocuments();
@@ -127,7 +135,7 @@ exports.getAllProvinceUser = async (req, res, next) => {
   try {
     // 1) proses query parameter pagination etc
     // 2) query data dan query count total
-    const results = await Province.find({ status: 1});
+    const results = await Province.find({ status: 1 });
 
     // 3) bentuk response data dan set status code = 200
     data = {
