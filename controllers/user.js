@@ -65,10 +65,10 @@ exports.createBulkUser = async (req, res, next) => {
 
     const userNik = result.map(val => val.nik).filter(val => val);
     
-    const provinces = result.map((val) => val.place_of_birth);
+    const provinces = result.map((val) => val.area);
     if (provinces.length != result.length) throw new Error(province_required);
     
-    const cities = result.map(val => val.city_of_residence);
+    const cities = result.map(val => val.kota);
     if (cities.length != result.length) throw new Error(city_required);
 
     const users = await User.find({ 
@@ -85,7 +85,7 @@ exports.createBulkUser = async (req, res, next) => {
         return false;
       });
     }
-    
+
     const dbProvince = await Province.find({ slug: { $in: provinces }});
     if (dbProvince.length != [...new Set(provinces)].length) throw new Error(province_not_valid);
 
@@ -102,8 +102,10 @@ exports.createBulkUser = async (req, res, next) => {
     });  
 
     result = result.map((value) => {
-      value.place_of_birth = dbObjProvince[value.place_of_birth]._id;
-      value.city_of_residence = dbObjCity[value.city_of_residence]._id;
+      value.fullname = value.namalengkap;
+      value.chinese_name = value.namamandarin;
+      value.place_of_birth = dbObjProvince[value.area]._id;
+      value.city_of_residence = dbObjCity[value.kota]._id;
       return value;
     });
 
